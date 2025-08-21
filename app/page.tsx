@@ -110,12 +110,20 @@ export default function Home() {
                     Grow your client base
                   </li>
                 </ul>
-                <Link
-                  href="/jobs?job_type=tech"
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                >
-                  View Tech Jobs
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/jobs?job_type=tech"
+                    className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                  >
+                    View Tech Jobs
+                  </Link>
+                  <Link
+                    href="/technicians"
+                    className="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                  >
+                    Learn More
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -164,12 +172,20 @@ export default function Home() {
                     Build your reputation
                   </li>
                 </ul>
-                <Link
-                  href="/jobs?job_type=trainer"
-                  className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                >
-                  View Trainer Jobs
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/jobs?job_type=trainer"
+                    className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                  >
+                    View Trainer Jobs
+                  </Link>
+                  <Link
+                    href="/trainers"
+                    className="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                  >
+                    Learn More
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -231,12 +247,20 @@ export default function Home() {
                     Minimize downtime
                   </li>
                 </ul>
-                <Link
-                  href="/medspa-request"
-                  className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Get Equipment Help
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href="/medspa-request"
+                    className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                  >
+                    Get Equipment Help
+                  </Link>
+                  <Link
+                    href="/medspas"
+                    className="inline-block bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors text-center"
+                  >
+                    Learn More
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
