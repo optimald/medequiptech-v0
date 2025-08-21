@@ -1,0 +1,91 @@
+Key,Company Name,Customer Name,Model,Status,Priority,Trainer / Technician Name,MET Appt Date and Time,Created,Serial Number,Shipping State,Shipping City,National Account,Device Action,Description
+OPS-144228,Juniper Dermatology,Dr. Karla Pivik,VBeam Perfecta           ,Sourcing Technician,Not Assigned,,,8/20/2025 15:51:43,991403007947,Oregon,Bend,,Service - Warranty,{color:#ff5630}*_“The system will not boot. The main 24V from the HVPS to the main control board is not present.  Issues could be 1) interlock not making connection 2) fuses on the AC control PCB 3) AC control board 4) HVPS 5)fuse on the main I/O PCB.  We will need to send an engineer to the account.”_*{color}
+OPS-143976,Ideal Image West Chester  ,Angela Banks ,BBL,Invoice Customer,Not Assigned,,,8/19/2025 15:21:19,15563,Ohio,WEST CHESTER,,Service - Billable,Will need PM with DI filter and coolant particle filter when the HP is returned.
+OPS-143741,Epiphany Dermatology,Sabrena Morton,Vbeam Perfecta,Sourcing Parts,Scott - Highest,Robin Cross - Potential,,8/18/2025 11:43:54,9914-0300-2854,Colorado,Denver,,Service - Billable,
+OPS-143738,Advanced DermCare,David Cholak,Vbeam 2,Quote,P2,,,8/18/2025 11:29:45,9914-0300-0930,Connecticut,DANBURY,,Service - Billable,
+OPS-143712,Forefront Dermatology Upland,"Valeria  Villa
+",Lightsheer Duet   ,Invoice Customer,P2,,,8/18/2025 10:07:37,5807,California,Upland,,Service - Billable,"PM, fill coolant, energy calibration. Will need service hasp to perform this service"
+OPS-143709,Gaughf Dermatology,"Claudia  Gaughf
+",Iris Pi,Invoice Customer,Scott - Highest,Josh Downing - Potential,,8/18/2025 10:03:05,IP0C2024004,Georgia,SAVANNAH,,Service - Billable,Possible 532 motor module needed. Calibration needed.
+OPS-143704,Scott sanders dermatology md,"Scott  Gerard
+",VBeam Perfecta           ,Invoice Customer,P2,,,8/18/2025 9:51:43,9914-0300-1884,New York,New City,,Service - Billable,"PM with Dye kit, full head rebuild, DI filter and dye filter."
+OPS-143556,Kyle Cox MD - Oculofacial Plastic Surgery and Aesthetics,Dr. Kyle Cox,Edge One,MET Service Pending,P1,Robin Cross - Confirmed,8/22/2025 10:00:00,8/15/2025 10:06:30,EDIJ23014,Colorado,Boulder,,Service - Warranty,Need to adjust the scanner sizing/alignment to be centered. 
+OPS-143460,Bay Area Cosmetic Dermatology,Kathleen  Welsh /  Yasmin Saiyed,GentleLase Pro-U,Sourcing Technician,P2,MRP - Internal Biomed?,8/25/2025 12:00:00,8/14/2025 14:01:04,9914-9030-1150,California,SAN FRANCISCO,,Service - Billable,"PM with Dual Filter, PM reset and calibration/energy verification"
+OPS-143456,Bay Area Cosmetic Dermatology,"Kathleen  Welsh
+",GentleMax Pro,Sourcing Technician,P2,MRP - Internal Biomed?,8/25/2025 12:30:00,8/14/2025 13:56:40,9914-9035-13882,California,San Francisco,,Service - Billable,"PM with flash lamps, Combo/Dual filter and full circuit calibration in both modes. System will need a service code. They are also needing replacement 6-8-10 spot size lens and a 12-15-18 spot size lens (full lens assembly)"
+OPS-143446,Platinum Medical Spa,Hannaa Rahime,Emsella Chair,Sourcing Parts,P1,Handyman service - Potential,,8/14/2025 13:10:40,29930B002721,International,Edmon,,Service - Warranty,
+OPS-143309,US Dermatology Partners,"Merideth   Veritasi
+",Icon ,Sourcing Technician,P2,Jessie Routh - Potential,,8/13/2025 11:48:08,25-2631,Missouri,Lee's Summit,,Service - Billable,"PM, coolant reservoir caps, blue filter kit with fittings, coolant (chiller fluid) and flush/fill kit."
+OPS-143158,U.S. dermatology partners ,"Mary  Birnesser
+",Acupulse C02,Invoice Customer,P2,Robin Cross,8/22/2025 13:00:00,8/12/2025 12:19:50,2238,Colorado,Denver,,Service - Billable,Standard PM with calibration and possible alignment.
+OPS-143074,Lucid Dermatology ,Aziz Chowdhury,GentleMax Pro,MET Service Pending,P1,Jon Shek - Confirmed,8/21/2025 12:00:00,8/11/2025 15:31:58,9914-9035-3439,New York,Jamaica,,Service - Billable,"PM, Replacement debris windows, DI filter, and energy calibration. Will need service maintenance code as well."
+OPS-143041,Northwest Georgia Dermatology,"Jason  Smith
+",M22,Invoice Customer,P2,,,8/11/2025 12:31:09,793,Georgia,ROME,,Service - Billable,"PM status needs to be reset. DI filter needs replacement, Possible HV relay causing noise, will need coolant flush, IPL HP calibration"
+OPS-142864,Dayton Skin,Dr. Martha Hickmann,Edge One,Invoice Customer,P2,,,8/8/2025 10:55:51,EDIJ23018,Ohio,Dayton,,Service - Billable,PM with calibration and coolant (distilled water) flush
+OPS-142861,Dayton Skin,Dr. Martha Hickmann,Revlite ,Invoice Customer,P2,,,8/8/2025 10:52:51,  RL-5073,Ohio,Dayton,,Service - Billable,Standard PM with DI filter and energy verification
+OPS-142729,DermFx,Tracy Boukis,GentleMax Pro,Invoice Customer,P1,,,8/7/2025 12:48:58,9914-9035-0055,California,SUNSET BEACH,,Service - Billable,"MET service needed. PM with these items per Jeff: 2 flashlamps for the Yag Cavity, Old style DI and particle filter (see image), Large air filter, Flow switch. Will need specialty tool (Pressure gauge test tool for DCD). Maintenance code needed."
+OPS-142708,Ideal Image - Northgate  ,Leslie ,Joule,Sourcing Technician,P2,Eric Hudlicky,8/23/2025 11:00:00,8/7/2025 11:20:10,15954-00008,Washington,Seattle,,Service - Billable,PM with DI filter and coolant particle filter. 
+OPS-142655,Ideal Image Augusta,Lee,Joule ,MET Service Pending,P2,Micah Hayes - 404-553-1288,8/26/2025 12:00:00,8/6/2025 16:32:51,1548300008,Georgia,AUGUSTA,,Service - Billable," PM service with Coolant and DI filters replacement, along with needed BBL HP calibration."
+OPS-142352,Pinnacle Dermatology (7373 France Ave location),Kelsey Trexel / Carley Ruid,Vbeam Perfecta,MET Service Pending,Scott - Highest,Josh Downing - Confirmed,8/20/2025 12:00:00,8/4/2025 15:03:10,991403007789,Minnesota,Edina,,Service - Billable,"Agreement Sent.  PM is billable, dye pump head is warranty.  "
+OPS-142299,Golden State Dermatology,Andrea Rogers,VBeam Perfecta     ,Sourcing Technician,P2,Cory Ladd,8/28/2025 14:00:00,8/4/2025 11:28:12,9914-0300-0052,California,Walnut Creek,,Service - Billable,Full head rebuild
+OPS-141883,Qualderm Partners: Dermatology Affiliates - Buckhead,Mayya Burts ,VBeam Perfecta           ,MET Service Pending,Scott - Highest,Josh Downing - Confirmed,8/22/2025 10:00:00,7/30/2025 11:25:44,9914-0300-7820,Georgia,ATLANTA,,Service - Warranty,Need Dye Pump Assembly
+OPS-141621,"A Center for Dermatology, Cosmetic and Laser Surgery",Dr. Peter Vitulli/Julie 561-557-4152,Vbeam Perfecta ,Sourcing Technician,P1,Tony Franco,,7/28/2025 16:39:09,9914-0300-7839,Florida,Jupiter,,Service - Warranty,PC board replacement
+OPS-141561,Beauty Now Medspa,Dr. Mobley,Darwin,Invoice Customer,P2,,,7/28/2025 11:47:32,3272E00012301,Utah,Millcreek,,Service - Billable,
+OPS-141428,Destination Aesthetics,"Samantha   Waters
+",Diamond Glow,Invoice Customer,P2,,,7/25/2025 14:45:34,SP32193,California,EL DORADO HILLS,,Service - Billable,This will be to secure the #2 bottle mount and flush/clean the system. This can be done by handyman service as there is no laser component to the system.
+OPS-141372,Apex Dermatology,Mary Birnesser,Vbeam Perfecta,MET Service Pending,P1,Robin Cross,8/22/2025 13:00:00,7/25/2025 10:16:16,9914-0300-0062,Colorado, Denver,,Service - Warranty,Needs dye kit and cot install. HP with Fiber and sliders are being shipped directly to the customer. 
+OPS-141258,ReTouchd by ND,Krystal Larosa,Primelase ,Quote,P3,,,7/24/2025 13:19:33,200001600-10024,International,"Woodbrook, Port of Spain",,Service - Billable,
+OPS-141223,Allura skin and laser center-GSD,"Melissa   Lemus
+",Scarlett RF,Sourcing Technician,Scott - Highest,Dan Garcia/Cory Ladd - potentially ,,7/24/2025 11:55:22,VCFVH00443,California,SAN MATEO,,Service - Billable,
+OPS-141128,Cumberland Skin,Gabrielle Taylor,VBeam Perfecta   ,Invoice Customer,P2,,,7/23/2025 16:23:30,9914-0300-0585,Tennessee, Hendersonville,,Service - Billable,"System will need a new dye kit and cot, new di filter. - Needs head rebuild"
+OPS-141011,Allura skin and laser center-GSD,"Melissa   Lemus
+",PicoSure ,Sourcing Technician,Scott - Highest,Dan Garcia/Cory Ladd - potentially,,7/23/2025 10:49:17,PICO1866,California,SAN MATEO,,Service - Billable,"PM with Flash lamps, DI filter, maintenance code and HP communication cables (2 each)."
+OPS-140991,Flawless Image Med Spa,Phillip Din,Motus AY,Sourcing Technician,P1, David Dicicco 856-496-9797 - Potential,,7/23/2025 10:12:02,QN1C231B,New York,East Syracuse,,Service - Warranty,"8-6-25 DK Flash lamps taken to shipping 
+
+8-20-25 DK Parts on site. "
+OPS-140985,New River Dermatology,Dr. Daniel Hurd,Elite IQ,Sourcing Technician,P2,,,7/23/2025 9:55:52,RL0C2703B,Virginia,Blacksburg ,,Service - Warranty,
+OPS-140867,Newport Coast Dermatology,Dr. Grace Liu,Dot,Invoice Customer,P1,,,7/22/2025 13:53:07,UF9A0706,California,Newport Beach,,Service - Billable,
+OPS-140748,Hawaii Premier Dermatology,"Tagai  Musaev
+",M22,Quote,P3,,,7/21/2025 16:37:27,10337,Hawaii,Honolulu,,Service - Billable,
+OPS-140738,Braun Dermatology,Caroline Salinas,Icon,Invoice Customer,P2,,,7/21/2025 16:24:22,,DC,,,Service - Billable,
+OPS-140717,ABCLLC,Aruna Chaubal,Xeo,Invoice Customer,P1,Darpan Rathod - Potential (Likely),,7/21/2025 15:55:25,P13947,Indiana,Munster,,Service - Billable,
+OPS-140707,Laser Spa of Tampa Bay,Dr. Frangos ,Picosure ,Invoice Customer,P1,,,7/21/2025 15:44:14,PICO0296,Florida,Tarpon Springs,,Service - Billable,
+OPS-140688,Wills Eye Hospual,Sean Koger,Ultrapulse,Invoice Customer,P2,,,7/21/2025 15:25:06,013-68651,Pennsylvania,,,Service - Billable,PM with calibration and verification of alignment. The F4 fuse on the AC control board was replaced by the customer and will need to be verified to be the correct fuse. 
+OPS-140681,Dayton Skin,Dr. Martha Hickmann,Stellar M22,Invoice Customer,P2,,,7/21/2025 15:19:08,SN001120,Ohio,Dayton,,Service - Billable,
+OPS-140641,Qualderm Partners: Pinnacle Dermatology - Brighton,Stacy,M22,MET Service Pending,P1,Mosab Brahma,,7/21/2025 14:12:36,95,Michigan,BRIGHTON,,Service - Billable,PM for HP/device and calibration (Not sure when device/HP was last serviced)
+OPS-140122,BH Skin Dermatology ,Dr. Don Mehrabi,M22,Invoice Customer,P2,,,7/16/2025 14:55:22,//,California,Glendale,,Service - Billable,"PM with DI filter, computer battery and calibration"
+OPS-139953,Ideal Image SEA01WA-Northgate  ,Leslie ,Joule,Sourcing Technician,P2,Eric Hudlicky - Confirmed,8/23/2025 11:00:00,7/14/2025 16:17:40,15954-00008,Washington,Seattle,,Service - Billable,PM with DI Filter and coolant particle filter
+OPS-139950,VibrantSkin Dermatology and Laser,Dr. Kesha Buster,Lucent ,Sourcing Technician,P2,,,7/14/2025 15:49:52,9200 E0006 2305,Oklahoma,Tulsa,,Service - Billable,"PM with coolant filter, software update and calibration/energy test"
+OPS-139948,VibrantSkin Dermatology and Laser,Dr. Kesha Buster,Excel HR,Sourcing Technician,P2,,,7/14/2025 15:48:53,EH10134,Oklahoma,Tulsa,,Service - Billable,PM with DI Filter and coolant particle filter. Energy test/calibration
+OPS-139896,NCK Skin Therapy ,Julie Stillwell ,Iris,Invoice Customer,P1,,,7/14/2025 13:11:50,BL0J2022124,Kansas,BELOIT,,Service - Billable,
+OPS-139880,RFSA Dermatology,Jazmin Rueda,Vbeam Perfecta,Sourcing Technician,P1,Precision Laser - Carolyn 512-626-6267,,7/14/2025 12:46:48,991403002069,Texas,SAN ANTONIO,,Service - Billable,"Replace cot pump assembly, drain the current cot bottle and verify that there is no longer back flow from the dye reservoir into the cot bottle. Replace dye kit and cot.  Complete wavelength calibration and circuit calibration.  Verify system is operating to MFG specifications."
+OPS-139867,Coastal Facial Plastics,Dr. Virginia Teti,Vbeam Perfecta,Sourcing Technician,Scott - Highest,Darin - Potentially,,7/14/2025 12:03:30,9914-0300-2064,Virginia,Virginia Beach,,Service - Billable,Display screen needs to be replaced. 
+OPS-139404,Minnesota Oral and Facial Surgery,Kristy Martins,Smartxide,Sourcing Technician,P1,,,7/9/2025 13:33:44,UX8A305R,Minnesota,Sartell,,Service - Billable,
+OPS-139400,Dr. Sofonio Board Certified Plastic Surgeon,Jeana Tatosian / Dianna Wilson,Excel V,MET Service Pending,P1,Willie Peacock - Confirmed,8/27/2025 10:00:00,7/9/2025 13:25:32,EV10733,California,RANCHO MIRAGE,,Service - Billable,
+OPS-139398,Dr. Sofonio Board Certified Plastic Surgeon,Jeana,M22,MET Service Pending,P1,Willie Peacock - Confirmed,8/27/2025 10:00:00,7/9/2025 13:21:16,  22957,California,RANCHO MIRAGE,,Service - Billable,"System will need the DI coolant filter replaced and the 560nM filter replaced. System will need to be drained, flushed, filter replaced, energy verified/calibrated for the PM."
+OPS-139397,Dr. Sofonio Board Certified Plastic Surgeon,Jeana Tatosian / Dianna Wilson,Gentlemax Pro,MET Service Pending,P1,Willie Peacock - Confirmed,8/27/2025 10:00:00,7/9/2025 13:19:55,9914-9035-17209,California,RANCHO MIRAGE,,Service - Billable,PM with Dual filter and reset lamp counter/calibration
+OPS-139387,Las Vegas Dermatology,"Harry  Greenberg
+",Cynergy,Invoice Customer,P2,,,7/9/2025 12:54:55,CYDH0283,Nevada,Las Vegas,,Service - Billable,
+OPS-139386,Las Vegas Dermatology,"Harry  Greenberg
+",SmartSkin,Invoice Customer,P2,,,7/9/2025 12:53:55,UF1B0501A,Nevada,Las Vegas,,Service - Billable,
+OPS-139385,Las Vegas Dermatology,"Harry  Greenberg
+",Revlite   ,Invoice Customer,P2,,,7/9/2025 12:53:26,RL-5013,Nevada,Las Vegas,,Service - Billable,
+OPS-139384,Las Vegas Dermatology,"Harry  Greenberg
+",Apogee,Invoice Customer,P2,,,7/9/2025 12:53:02,APMD2044,Nevada,Las Vegas,,Service - Billable,
+OPS-139383,Las Vegas Dermatology,"Harry  Greenberg
+",Elite+,Invoice Customer,P2,,,7/9/2025 12:52:22,ELM+2584,Nevada,Las Vegas,,Service - Billable,
+OPS-139073,BH Skin Dermatology,Dr. Don Mehrabi,Picocare,Sourcing Parts,P1,,,7/7/2025 10:03:34,,California,Encino,,Service - Warranty,6-30-25 Needs flash lamps and calibration. Chad gave flash lamp information to Trevor for him to order compatible lamp. 
+OPS-137178,Buffalo Medical Group,Zoey Glick,Apogee Elite  ,Final Billing,P3,Richardo,6/25/2025 11:00:00,6/18/2025 13:12:54,ELMD1721,New York,,,Service - Billable,
+OPS-133755,Cosmo Contouring,Gaurav Ohri,GentleMax Pro    ,Sourcing Technician,P3,,,5/21/2025 13:58:38,9914-9035-21419,Virginia,Woodbridge,,Service - Warranty,MET Service needed. Shutter assembly needs to be replaced.
+OPS-131733,Infinity Skin Care,"Betsy  Desjardins
+",Clarity 2,Invoice Customer,P2,,,5/7/2025 10:08:03,c3021m013,Maine,Oakland,,Service - Billable,MET service needed. PM with DI filter and calibration.
+OPS-131477,Vibrant Dermatology,Dr. Joyce  Imahiyerobo,LaseMD ,Sourcing Technician,P2,,,5/5/2025 14:27:36,LU222C027,Massachusetts,Dedham,,Service - Warranty,"Bio notes: system is fully operational, but there is a strange almost screeching noise when firing.  could be a speaker going out or possibly a fan."
+OPS-130108,Pearl Medical Aesthetics,Lisa Zimmerly,Soprano XL,Quote,P3,,,4/23/2025 12:59:15,SP 1429,Idaho,Boise ,,Service - Billable,System is noisy. PM needed with DI filter and coolant pump
+OPS-125218,Washington University School of Medicine,Allie Bauer,Fraxel,Final Billing,P3,Jesse Routh,,3/18/2025 10:58:12,00,Missouri,St. Louis,,Service - Billable,
+OPS-117227,US Dermatology Partners,Faith Tidwell,Lucent IPL,Final Billing,P3,Handyman,2/19/2025 14:30:00,1/22/2025 10:03:21,9201E00092211,Texas,Fort Worth ,,Service - Billable,Lucent is BILLABLE.  We confused it with a Service Contract for US Derm Partners (ops-111619) Lucent in Arizona so we conducted service under warranty.  I (Frank) created new Billable Epic and moved this MET device tkt (and MET exchanges) over to this one.  We will need to go back and bill for it. 
+OPS-110084,California Center for Dermatologic Surgery,"Ekama  Carlson
+",Ultrapulse,Final Billing,P3,Daniel Garcia,12/20/2024 11:00:00,11/25/2024 14:30:59,need,California,SAN FRANCISCO,,Service - Billable,
+OPS-106774,Joyful Dermatology,"Alaleh  Akhavan
+",Picosure,Final Billing,P3,Steven Camp,12/19/2024 13:00:00,11/1/2024 15:34:33,PICO0148,New York,DOBBS FERRY,,Service - Billable,
+OPS-102562,La Vida Aesthetics Institute,"Beth  Dugat
+",Venus Versa ,Sourcing Parts,P3,Margarito Sanchez,,10/4/2024 8:42:02,VE102407,Texas,HOUSTON,,Service - Billable,

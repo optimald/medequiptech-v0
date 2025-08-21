@@ -10,8 +10,11 @@ interface AuthContextType {
   loading: boolean
   signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
+  signInDemo: (role: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
+  isDemoUser: boolean
+  demoRole: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -20,6 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isDemoUser, setIsDemoUser] = useState(false)
+  const [demoRole, setDemoRole] = useState<string | null>(null)
 
   useEffect(() => {
     // Get initial session
@@ -84,8 +89,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error }
   }
 
+  const signInDemo = async (role: string) => {
+    try {
+      // Map role to demo email
+      const demoEmails = {
+        technician: 'demo.technician@medequiptech.com',
+        trainer: 'demo.trainer@medequiptech.com',
+        medspa: 'demo.medspa@medequiptech.com',
+        admin: 'demo.admin@medequiptech.com'
+      }
+      
+      const email = demoEmails[role as keyof typeof demoEmails]
+      if (!email) {
+        return { error: { message: 'Invalid demo role' } }
+      }
+
+      // Sign in with demo credentials
+      const { error, data } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'demo123'
+      })
+
+      if (error) {
+        return { error }
+      }
+
+      // Set demo user state
+      if (data.user) {
+        setUser(data.user)
+        setIsDemoUser(true)
+        setDemoRole(role)
+      }
+
+      return { error: null }
+    } catch (err) {
+      return { error: { message: 'Failed to sign in demo user' } }
+    }
+  }
+
   const signOut = async () => {
-    await supabase.auth.signOut()
+    if (isDemoUser) {
+      // Clear demo user state
+      setUser(null)
+      setIsDemoUser(false)
+      setDemoRole(null)
+    } else {
+      // Regular signout
+      await supabase.auth.signOut()
+    }
   }
 
   const refreshUser = async () => {
@@ -99,8 +150,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signUp,
     signIn,
+    signInDemo,
     signOut,
-    refreshUser
+    refreshUser,
+    isDemoUser,
+    demoRole
   }
 
   return (
