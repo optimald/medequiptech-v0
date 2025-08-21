@@ -1,36 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 
-// GET - List jobs with filters (admin only)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const jobType = searchParams.get('job_type')
     const priority = searchParams.get('priority')
-    const state = searchParams.get('state')
-    const city = searchParams.get('city')
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '50')
+    const limit = parseInt(searchParams.get('limit') || '20')
     const offset = (page - 1) * limit
 
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -39,14 +28,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Check if user is admin (approved user)
+    // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_approved')
+      .select('role_admin')
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile || !profile.is_approved) {
+    if (profileError || !profile || !profile.role_admin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -58,31 +47,22 @@ export async function GET(request: NextRequest) {
       .from('jobs')
       .select(`
         *,
-        bids(id, ask_price, bidder_id, status, created_at),
-        profiles!bids(bidder_id)(full_name, role_tech, role_trainer, base_city, base_state)
+        bids(id, ask_price, bidder_id, status, created_at)
       `)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
     // Apply filters
-    if (status) {
+    if (status && status !== 'all') {
       query = query.eq('status', status)
     }
     
-    if (jobType) {
+    if (jobType && jobType !== 'all') {
       query = query.eq('job_type', jobType)
     }
     
-    if (priority) {
+    if (priority && priority !== 'all') {
       query = query.eq('priority', priority)
-    }
-    
-    if (state) {
-      query = query.eq('shipping_state', state)
-    }
-    
-    if (city) {
-      query = query.eq('shipping_city', city)
     }
 
     // Get total count for pagination
@@ -91,11 +71,15 @@ export async function GET(request: NextRequest) {
       .select('id', { count: 'exact', head: true })
 
     // Apply same filters to count query
-    if (status) countQuery = countQuery.eq('status', status)
-    if (jobType) countQuery = countQuery.eq('job_type', jobType)
-    if (priority) countQuery = countQuery.eq('priority', priority)
-    if (state) countQuery = countQuery.eq('shipping_state', state)
-    if (city) countQuery = countQuery.eq('shipping_city', city)
+    if (status && status !== 'all') {
+      countQuery = countQuery.eq('status', status)
+    }
+    if (jobType && jobType !== 'all') {
+      countQuery = countQuery.eq('job_type', jobType)
+    }
+    if (priority && priority !== 'all') {
+      countQuery = countQuery.eq('priority', priority)
+    }
 
     // Execute queries
     const [jobsResult, countResult] = await Promise.all([
@@ -139,57 +123,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+      )
   }
 }
 
-// POST - Create new job (admin only)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { 
-      job_type, 
-      title, 
-      company_name, 
-      customer_name, 
-      model, 
-      priority, 
-      status, 
-      met_date, 
-      shipping_state, 
-      shipping_city,
-      address_line1,
-      address_line2,
-      zip,
-      contact_name,
-      contact_phone,
-      contact_email,
-      instructions_public,
-      instructions_private,
-      external_id
-    } = body
-
-    // Validation
-    if (!job_type || !title || !company_name || !customer_name || !model || !priority || !status) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -201,63 +147,42 @@ export async function POST(request: NextRequest) {
     // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_approved')
+      .select('role_admin')
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile || !profile.is_approved) {
+    if (profileError || !profile || !profile.role_admin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
       )
     }
 
-    // Create job
-    const { data: job, error: jobError } = await supabase
+    // Create new job
+    const { data: newJob, error: createError } = await supabase
       .from('jobs')
       .insert({
-        job_type,
-        title,
-        company_name,
-        customer_name,
-        model,
-        priority,
-        status,
-        met_date,
-        shipping_state,
-        shipping_city,
-        address_line1,
-        address_line2,
-        zip,
-        contact_name,
-        contact_phone,
-        contact_email,
-        instructions_public,
-        instructions_private,
-        external_id,
+        ...body,
         created_by: user.id
       })
       .select()
       .single()
 
-    if (jobError) {
-      console.error('Error creating job:', jobError)
+    if (createError) {
+      console.error('Error creating job:', createError)
       return NextResponse.json(
         { error: 'Failed to create job' },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({
-      message: 'Job created successfully',
-      job
-    })
+    return NextResponse.json({ job: newJob }, { status: 201 })
 
   } catch (error) {
-    console.error('Job creation error:', error)
+    console.error('Create job error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+      )
   }
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, User, GraduationCap, Building2, Shield, AlertCircle, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
+import Header from '@/components/Header'
 
 interface UserProfile {
   full_name: string
@@ -110,39 +111,38 @@ export default function Dashboard() {
   // Show approval pending message if not approved (but demo users are always approved)
   if (!isDemoUser && profile && !profile.is_approved) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        {/* Header with Logo and Title */}
-        <div className="flex items-start justify-between mb-8">
-          <div>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
             <h1 className="text-2xl font-bold mb-2">Account Pending Approval</h1>
             <p className="text-muted-foreground">
               Your account is currently under review by our admin team.
             </p>
           </div>
-          <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
+          
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader className="text-center">
+              <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+              <CardDescription>
+                This usually takes 1-2 business days. You'll be notified via email.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <div className="bg-muted p-4 rounded-lg">
+                <h3 className="font-medium mb-2">What happens next?</h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Admin will review your profile and credentials</li>
+                  <li>• You'll receive an email notification once approved</li>
+                  <li>• After approval, you can bid on jobs and access the platform</li>
+                </ul>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                This usually takes 1-2 business days. You'll be notified via email.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-        
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className="text-center">
-            <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-            <CardDescription>
-              This usually takes 1-2 business days. You'll be notified via email.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <h3 className="font-medium mb-2">What happens next?</h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Admin will review your profile and credentials</li>
-                <li>• You'll receive an email notification once approved</li>
-                <li>• After approval, you can bid on jobs and access the platform</li>
-              </ul>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              This usually takes 1-2 business days. You'll be notified via email.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     )
   }
@@ -164,18 +164,16 @@ export default function Dashboard() {
 
 function TechnicianDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header with Logo and Title */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Technician Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back, {profile?.full_name || 'Technician'}! Manage your laser equipment repair jobs.
             {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
-        <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -284,24 +282,23 @@ function TechnicianDashboard({ profile, stats, isDemoUser }: { profile: UserProf
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }
 
 function TrainerDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header with Logo and Title */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Trainer Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back, {profile?.full_name || 'Trainer'}! Manage your staff training and certification jobs.
             {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
-        <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -410,24 +407,23 @@ function TrainerDashboard({ profile, stats, isDemoUser }: { profile: UserProfile
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }
 
 function MedSpaDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header with Logo and Title */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">MedSpa Practice Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, {profile?.full_name || 'MedSpa Practice'}! Get equipment help and staff training.
+            Welcome back, {profile?.full_name || 'MedSpa Practice'}! Manage your equipment service and staff training needs.
             {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
-          </p>
-        </div>
-        <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
-      </div>
+              </p>
+            </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -536,24 +532,23 @@ function MedSpaDashboard({ profile, stats, isDemoUser }: { profile: UserProfile 
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }
 
 function AdminDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header with Logo and Title */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back, {profile?.full_name || 'Administrator'}! Manage the platform and users.
             {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
-        <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -659,8 +654,8 @@ function AdminDashboard({ profile, stats, isDemoUser }: { profile: UserProfile |
             </Button>
           </CardContent>
         </Card>
-      </div>
-
+              </div>
+              
       {/* Recent Activity */}
       <Card>
         <CardHeader>
@@ -678,8 +673,8 @@ function AdminDashboard({ profile, stats, isDemoUser }: { profile: UserProfile |
                 <p className="text-xs text-muted-foreground">1 hour ago</p>
               </div>
               <Badge variant="secondary">Pending</Badge>
-            </div>
-            
+              </div>
+              
             <div className="flex items-center space-x-4 p-3 bg-muted rounded-lg">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <div className="flex-1">
@@ -691,24 +686,23 @@ function AdminDashboard({ profile, stats, isDemoUser }: { profile: UserProfile |
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }
 
 function DefaultDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header with Logo and Title */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back, {profile?.full_name || 'User'}! Manage your account and activities.
             {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
-        <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -785,7 +779,7 @@ function DefaultDashboard({ profile, stats, isDemoUser }: { profile: UserProfile
             </Button>
           </CardContent>
         </Card>
-      </div>
+            </div>
 
       {/* Recent Activity */}
       <Card>
@@ -808,6 +802,7 @@ function DefaultDashboard({ profile, stats, isDemoUser }: { profile: UserProfile
           </div>
         </CardContent>
       </Card>
+        </div>
     </div>
   )
 }

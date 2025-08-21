@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,19 +24,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -48,11 +40,11 @@ export async function POST(request: NextRequest) {
     // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_approved')
+      .select('role_admin')
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile || !profile.is_approved) {
+    if (profileError || !profile || !profile.role_admin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -212,19 +204,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = (page - 1) * limit
 
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -236,11 +220,11 @@ export async function GET(request: NextRequest) {
     // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_approved')
+      .select('role_admin')
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile || !profile.is_approved) {
+    if (profileError || !profile || !profile.role_admin) {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -289,6 +273,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+      )
   }
 }

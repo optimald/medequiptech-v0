@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,19 +25,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -53,39 +45,39 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile) {
+    if (profileError || !profile || !profile.is_approved) {
       return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      )
-    }
-
-    if (!profile.is_approved) {
-      return NextResponse.json(
-        { error: 'Account must be approved before placing bids' },
+        { error: 'User must be approved to place bids' },
         { status: 403 }
       )
     }
 
-    // Check if job exists and is open for bidding
+    // Get job details to check if user can bid on this job type
     const { data: job, error: jobError } = await supabase
       .from('jobs')
-      .select('id, job_type, status, title')
+      .select('job_type, status')
       .eq('id', job_id)
-      .in('status', ['OPEN', 'BIDDING'])
       .single()
 
     if (jobError || !job) {
       return NextResponse.json(
-        { error: 'Job not found or not open for bidding' },
+        { error: 'Job not found' },
         { status: 404 }
+      )
+    }
+
+    // Check if job is open for bidding
+    if (!['OPEN', 'BIDDING'].includes(job.status)) {
+      return NextResponse.json(
+        { error: 'Job is not open for bidding' },
+        { status: 400 }
       )
     }
 
     // Check if user has the right role for this job
     if (job.job_type === 'tech' && !profile.role_tech) {
       return NextResponse.json(
-        { error: 'Only technicians can bid on technician jobs' },
+        { error: 'Only technicians can bid on tech jobs' },
         { status: 403 }
       )
     }
@@ -97,8 +89,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user already has an active bid on this job
-    const { data: existingBid } = await supabase
+    // Check if user already has a bid on this job
+    const { data: existingBid, error: bidCheckError } = await supabase
       .from('bids')
       .select('id')
       .eq('job_id', job_id)
@@ -106,15 +98,23 @@ export async function POST(request: NextRequest) {
       .eq('status', 'submitted')
       .single()
 
+    if (bidCheckError && bidCheckError.code !== 'PGRST116') {
+      console.error('Error checking existing bid:', bidCheckError)
+      return NextResponse.json(
+        { error: 'Failed to check existing bid' },
+        { status: 500 }
+      )
+    }
+
     if (existingBid) {
       return NextResponse.json(
-        { error: 'You already have an active bid on this job' },
-        { status: 409 }
+        { error: 'You already have a bid on this job' },
+        { status: 400 }
       )
     }
 
     // Create the bid
-    const { data: bid, error: bidError } = await supabase
+    const { data: newBid, error: createError } = await supabase
       .from('bids')
       .insert({
         job_id,
@@ -126,8 +126,8 @@ export async function POST(request: NextRequest) {
       .select()
       .single()
 
-    if (bidError) {
-      console.error('Error creating bid:', bidError)
+    if (createError) {
+      console.error('Error creating bid:', createError)
       return NextResponse.json(
         { error: 'Failed to create bid' },
         { status: 500 }
@@ -136,57 +136,30 @@ export async function POST(request: NextRequest) {
 
     // Update job status to BIDDING if it was OPEN
     if (job.status === 'OPEN') {
-      await supabase
+      const { error: updateError } = await supabase
         .from('jobs')
         .update({ status: 'BIDDING' })
         .eq('id', job_id)
+
+      if (updateError) {
+        console.error('Error updating job status:', updateError)
+        // Don't fail the bid creation if status update fails
+      }
     }
 
-    // Send admin alert email (we'll implement this next)
-    try {
-      await sendAdminBidAlert({
-        job_id,
-        job_title: job.title,
-        bidder_id: user.id,
-        bidder_email: user.email!,
-        ask_price,
-        note
-      })
-    } catch (emailError) {
-      console.error('Failed to send admin bid alert email:', emailError)
-      // Don't fail the bid if email fails
-    }
+    // TODO: Send notification to admin about new bid
+    // TODO: Send email notification
 
     return NextResponse.json({
       message: 'Bid placed successfully',
-      bid: {
-        id: bid.id,
-        job_id: bid.job_id,
-        ask_price: bid.ask_price,
-        note: bid.note,
-        status: bid.status,
-        created_at: bid.created_at
-      }
-    })
+      bid: newBid
+    }, { status: 201 })
 
   } catch (error) {
     console.error('Bid creation error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+      )
   }
-}
-
-async function sendAdminBidAlert(bidData: {
-  job_id: string
-  job_title: string
-  bidder_id: string
-  bidder_email: string
-  ask_price: number
-  note?: string
-}) {
-  // TODO: Implement Resend email sending
-  // For now, just log the alert
-  console.log('ADMIN ALERT - New bid:', bidData)
 }

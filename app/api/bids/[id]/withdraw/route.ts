@@ -1,103 +1,130 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
-export const dynamic = 'force-dynamic';
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const bidId = params.id
+    const body = await request.json()
+    const { reason } = body
+
+    if (!bidId) {
+      return NextResponse.json(
+        { error: 'Bid ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
+
+    // Get user session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Authentication required' },
         { status: 401 }
-      );
+      )
     }
 
-    const bidId = params.id;
+    // Check if user is approved
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_approved')
+      .eq('user_id', user.id)
+      .single()
 
-    // First, verify the bid belongs to the user and is in a withdrawable state
-    const { data: existingBid, error: fetchError } = await supabase
-      .from('bids')
-      .select('id, user_id, status, job_id')
-      .eq('id', bidId)
-      .single();
-
-    if (fetchError || !existingBid) {
+    if (profileError || !profile || !profile.is_approved) {
       return NextResponse.json(
-        { error: 'Bid not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check if the bid belongs to the authenticated user
-    if (existingBid.user_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized to withdraw this bid' },
+        { error: 'User must be approved to withdraw bids' },
         { status: 403 }
-      );
+      )
     }
 
-    // Check if the bid can be withdrawn (only PENDING bids can be withdrawn)
-    if (existingBid.status !== 'PENDING') {
+    // Get the bid to verify ownership and status
+    const { data: bid, error: bidError } = await supabase
+      .from('bids')
+      .select('*')
+      .eq('id', bidId)
+      .eq('bidder_id', user.id)
+      .single()
+
+    if (bidError || !bid) {
       return NextResponse.json(
-        { error: 'Only pending bids can be withdrawn' },
-        { status: 400 }
-      );
+        { error: 'Bid not found or access denied' },
+        { status: 404 }
+      )
     }
 
-    // Update the bid status to WITHDRAWN
+    // Check if bid can be withdrawn
+    if (bid.status !== 'submitted') {
+      return NextResponse.json(
+        { error: 'Only submitted bids can be withdrawn' },
+        { status: 400 }
+      )
+    }
+
+    // Withdraw the bid
     const { error: updateError } = await supabase
       .from('bids')
-      .update({ status: 'WITHDRAWN' })
-      .eq('id', bidId);
+      .update({ 
+        status: 'withdrawn',
+        withdrawn_at: new Date().toISOString(),
+        withdrawal_reason: reason || null
+      })
+      .eq('id', bidId)
 
     if (updateError) {
-      console.error('Error updating bid status:', updateError);
+      console.error('Error withdrawing bid:', updateError)
       return NextResponse.json(
         { error: 'Failed to withdraw bid' },
         { status: 500 }
-      );
+      )
     }
 
     // Check if this was the only bid on the job, and if so, revert job status to OPEN
-    const { data: otherBids, error: otherBidsError } = await supabase
+    const { data: remainingBids, error: remainingBidsError } = await supabase
       .from('bids')
       .select('id')
-      .eq('job_id', existingBid.job_id)
-      .neq('status', 'WITHDRAWN');
+      .eq('job_id', bid.job_id)
+      .eq('status', 'submitted')
 
-    if (otherBidsError) {
-      console.error('Error checking other bids:', otherBidsError);
-    } else if (!otherBids || otherBids.length === 0) {
-      // No other active bids, revert job status to OPEN
+    if (remainingBidsError) {
+      console.error('Error checking remaining bids:', remainingBidsError)
+      // Don't fail the withdrawal if this check fails
+    } else if (!remainingBids || remainingBids.length === 0) {
+      // No more submitted bids, revert job to OPEN status
       const { error: jobUpdateError } = await supabase
         .from('jobs')
         .update({ status: 'OPEN' })
-        .eq('id', existingBid.job_id);
+        .eq('id', bid.job_id)
 
       if (jobUpdateError) {
-        console.error('Error updating job status:', jobUpdateError);
+        console.error('Error updating job status:', jobUpdateError)
+        // Don't fail the withdrawal if job status update fails
       }
     }
 
+    // TODO: Send notification to admin about bid withdrawal
+    // TODO: Send email notification
+
     return NextResponse.json({
       message: 'Bid withdrawn successfully',
-      bidId: bidId
-    });
+      bid_id: bidId
+    })
 
   } catch (error) {
-    console.error('Error in withdraw bid API:', error);
+    console.error('Bid withdrawal error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    );
+      )
   }
 }

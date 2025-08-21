@@ -134,10 +134,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInDemo = async (role: string) => {
     try {
+      console.log('🔍 Starting demo login for role:', role)
       const demoUser = DEMO_USERS[role as keyof typeof DEMO_USERS]
       if (!demoUser) {
+        console.error('❌ Invalid demo role:', role)
         return { error: { message: 'Invalid demo role' } }
       }
+
+      console.log('📧 Attempting to sign in with:', demoUser.email)
 
       // First, try to sign in with existing demo user
       let { error, data } = await supabase.auth.signInWithPassword({
@@ -145,9 +149,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password: demoUser.password
       })
 
+      console.log('🔐 Sign in attempt result:', { error, hasData: !!data })
+
       // If demo user doesn't exist, create them
       if (error && error.message.includes('Invalid login credentials')) {
-        console.log('Creating demo user for role:', role)
+        console.log('👤 Creating demo user for role:', role)
         
         // Create the demo user
         const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
@@ -161,13 +167,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         })
 
+        console.log('📝 Sign up result:', { signUpError, signUpData })
+
         if (signUpError) {
-          console.error('Error creating demo user:', signUpError)
+          console.error('❌ Error creating demo user:', signUpError)
           return { error: signUpError }
         }
 
+        // Wait a moment for the user to be fully created
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
         // Create profile for the demo user
         if (signUpData.user) {
+          console.log('👤 Creating profile for user:', signUpData.user.id)
+          
           const profileData = {
             user_id: signUpData.user.id,
             full_name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
@@ -181,35 +194,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role_admin: role === 'admin'
           }
 
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert(profileData)
+          try {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert(profileData)
 
-          if (profileError) {
-            console.error('Error creating demo profile:', profileError)
-            // Continue anyway as the user was created
+            if (profileError) {
+              console.error('❌ Error creating demo profile:', profileError)
+              console.log('⚠️ Continuing without profile - user can still sign in')
+            } else {
+              console.log('✅ Demo profile created successfully')
+            }
+          } catch (profileErr) {
+            console.error('❌ Exception creating demo profile:', profileErr)
+            console.log('⚠️ Continuing without profile - user can still sign in')
           }
 
           // Now sign in with the newly created user
+          console.log('🔐 Signing in with newly created user...')
           const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
             email: demoUser.email,
             password: demoUser.password
           })
 
           if (signInError) {
+            console.error('❌ Error signing in with new user:', signInError)
             return { error: signInError }
           }
 
           data = signInData
+          console.log('✅ Successfully signed in with new demo user')
         }
+      } else if (error) {
+        // Some other error occurred during sign in
+        console.error('❌ Error during sign in (not credentials):', error)
+        return { error }
       }
 
       if (error) {
+        console.error('❌ Final error:', error)
         return { error }
       }
 
       // Set demo user state and persist to localStorage
       if (data.user) {
+        console.log('🎉 Demo login successful, setting state for user:', data.user.id)
         setUser(data.user)
         setIsDemoUser(true)
         setDemoRole(role)
@@ -219,7 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { error: null }
     } catch (err) {
-      console.error('Error in signInDemo:', err)
+      console.error('💥 Unexpected error in signInDemo:', err)
       return { error: { message: 'Failed to sign in demo user' } }
     }
   }

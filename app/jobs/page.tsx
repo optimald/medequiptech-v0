@@ -2,28 +2,33 @@
 
 import { useAuth } from '@/lib/auth-context'
 import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Search, MapPin, Calendar, DollarSign, MessageSquare, Eye, Building2 } from 'lucide-react'
+import { Loader2, Search, MapPin, Calendar, DollarSign, MessageSquare, Eye, Building2, Lock, UserPlus } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Job {
   id: string
   title: string
   company_name: string
-  customer_name: string
+  customer_name?: string
   model: string
   priority: string
   status: string
   met_date: string
   shipping_city: string
   shipping_state: string
-  instructions_public: string
+  instructions_public?: string
   job_type: string
   created_at: string
+  can_bid?: boolean
+  requires_account?: boolean
+  job_summary?: string
   bids?: Array<{
     id: string
     ask_price: number
@@ -33,39 +38,133 @@ interface Job {
   }>
 }
 
+interface UserAccess {
+  authenticated: boolean
+  approved: boolean
+  role_tech: boolean
+  role_trainer: boolean
+}
+
 export default function JobsPage() {
   const { user, isDemoUser, demoRole } = useAuth()
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [jobTypeFilter, setJobTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [userAccess, setUserAccess] = useState<UserAccess>({
+    authenticated: false,
+    approved: false,
+    role_tech: false,
+    role_trainer: false
+  })
+
+  // Update URL when filters change
+  const updateURL = (newJobType: string, newStatus: string) => {
+    const params = new URLSearchParams()
+    if (newJobType && newJobType !== 'all') params.set('job_type', newJobType)
+    if (newStatus && newStatus !== 'all') params.set('status', newStatus)
+    
+    const newURL = params.toString() ? `?${params.toString()}` : ''
+    router.replace(`/jobs${newURL}`)
+  }
+
+  // Handle job type filter change
+  const handleJobTypeChange = (value: string) => {
+    setJobTypeFilter(value)
+    updateURL(value, statusFilter)
+  }
+
+  // Handle status filter change
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value)
+    updateURL(jobTypeFilter, value)
+  }
 
   useEffect(() => {
+    // Initialize filters from URL parameters
+    const urlJobType = searchParams.get('job_type')
+    const urlStatus = searchParams.get('status')
+    
+    if (urlJobType && (urlJobType === 'tech' || urlJobType === 'trainer')) {
+      setJobTypeFilter(urlJobType)
+    }
+    
+    if (urlStatus) {
+      setStatusFilter(urlStatus)
+    }
+  }, [searchParams])
+
+  // Set userAccess for demo users when they first load
+  useEffect(() => {
+    if (user && isDemoUser && demoRole) {
+      setUserAccess({
+        authenticated: true,
+        approved: true,
+        role_tech: demoRole === 'technician' || demoRole === 'admin',
+        role_trainer: demoRole === 'trainer' || demoRole === 'admin'
+      })
+    }
+  }, [user, isDemoUser, demoRole])
+
+  // Handle job filtering and fetching
+  useEffect(() => {
     if (user) {
-      // Auto-filter by user role for tech/trainer users
-      if (isDemoUser) {
-        if (demoRole === 'technician') {
+      // Auto-filter by user role for tech/trainer users if no URL parameter
+      if (isDemoUser && !searchParams.get('job_type')) {
+        if (demoRole === 'technician' && jobTypeFilter !== 'tech') {
           setJobTypeFilter('tech')
-        } else if (demoRole === 'trainer') {
+          updateURL('tech', statusFilter)
+        } else if (demoRole === 'trainer' && jobTypeFilter !== 'trainer') {
           setJobTypeFilter('trainer')
+          updateURL('trainer', statusFilter)
         }
       }
+      
+      // For authenticated users, enforce role-based filtering
+      // Only apply role-based filtering if userAccess has been loaded
+      if (userAccess.authenticated) {
+        if (userAccess.role_tech && !userAccess.role_trainer) {
+          // Technician only - can only see tech jobs
+          if (jobTypeFilter !== 'tech') {
+            setJobTypeFilter('tech')
+            updateURL('tech', statusFilter)
+          }
+        } else if (userAccess.role_trainer && !userAccess.role_tech) {
+          // Trainer only - can only see trainer jobs
+          if (jobTypeFilter !== 'trainer') {
+            setJobTypeFilter('trainer')
+            updateURL('trainer', statusFilter)
+          }
+        }
+      }
+      
+      fetchJobs()
+    } else {
+      // Public user - fetch jobs without authentication
       fetchJobs()
     }
-  }, [user, jobTypeFilter, statusFilter, isDemoUser, demoRole])
+  }, [user, jobTypeFilter, statusFilter, isDemoUser, demoRole, searchParams])
 
   const fetchJobs = async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      if (jobTypeFilter) params.append('jobType', jobTypeFilter)
-      if (statusFilter) params.append('status', statusFilter)
+      if (jobTypeFilter && jobTypeFilter !== 'all') params.append('job_type', jobTypeFilter)
+      if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter)
       
       const response = await fetch(`/api/jobs/public?${params.toString()}`)
       if (response.ok) {
         const data = await response.json()
         setJobs(data.jobs || [])
+        setUserAccess(data.user_access || {
+          authenticated: false,
+          approved: false,
+          role_tech: false,
+          role_trainer: false
+        })
       } else {
         console.error('Failed to fetch jobs')
       }
@@ -107,41 +206,259 @@ export default function JobsPage() {
     // Status filtering
     const matchesStatus = !statusFilter || statusFilter === 'all' || job.status === statusFilter
     
-    return matchesSearch && matchesJobType && matchesStatus
+    // Role-based filtering - ensure users only see jobs they can work on
+    const matchesRole = !userAccess.authenticated || 
+                       (userAccess.role_tech && job.job_type === 'tech') ||
+                       (userAccess.role_trainer && job.job_type === 'trainer') ||
+                       (userAccess.role_tech && userAccess.role_trainer) // Admin users can see all
+    
+    return matchesSearch && matchesJobType && matchesStatus && matchesRole
   })
 
-  if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle>Please Log In</CardTitle>
-            <CardDescription>
-              You need to be logged in to view available jobs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Link href="/auth/signin">
-              <Button>Sign In</Button>
-            </Link>
+  // Show different content based on authentication status
+  if (!user && !userAccess.authenticated) {
+  return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header with Logo */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center">
+                <Image
+                  src="/logo.avif"
+                  alt="MedEquipTech"
+                  width={200}
+                  height={60}
+                  className="h-12 w-auto"
+                />
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/auth/signin"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/signup"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Sign Up
+              </Link>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Available Jobs</h1>
+            <p className="text-muted-foreground">
+              Browse available equipment service jobs
+            </p>
+          </div>
+
+        {/* Public Call-to-Action */}
+        <Card className="mb-6 bg-blue-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <UserPlus className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-blue-900 mb-2">
+                Get Full Access to Job Details
+              </h3>
+              <p className="text-blue-700 mb-4">
+                Sign up to view company information, specific locations, and place bids on available jobs. 
+                Join our community of qualified technicians and trainers.
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Link href="/auth/signup">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    Sign Up Now
+                  </Button>
+                </Link>
+                <Link href="/auth/signin">
+                  <Button variant="outline">
+                    Sign In
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                <Input
+                  placeholder="Search jobs..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                  />
+                </div>
+                <div>
+                <Select value={jobTypeFilter} onValueChange={handleJobTypeChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="tech">Technician</SelectItem>
+                    <SelectItem value="trainer">Trainer</SelectItem>
+                  </SelectContent>
+                </Select>
+                </div>
+              <div>
+                <Select value={statusFilter} onValueChange={handleStatusChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="OPEN">Open</SelectItem>
+                    <SelectItem value="BIDDING">Bidding</SelectItem>
+                    <SelectItem value="AWARDED">Awarded</SelectItem>
+                  </SelectContent>
+                </Select>
+                </div>
+              <div>
+                <Button onClick={fetchJobs} variant="outline" className="w-full">
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Jobs List - Public View */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        ) : filteredJobs.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <p className="text-muted-foreground">No jobs found matching your criteria.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredJobs.map((job) => (
+              <Card key={job.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-lg font-semibold">{job.title}</h3>
+                        <div className="flex gap-2">
+                          <Badge className={getPriorityColor(job.priority)}>
+                            {job.priority}
+                          </Badge>
+                          <Badge className={getStatusColor(job.status)}>
+                            {job.status}
+                          </Badge>
+                    </div>
+                  </div>
+                  
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Building2 className="h-4 w-4 mr-2" />
+                            {job.model}
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            {job.shipping_city}, {job.shipping_state}
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                  
+                    <div className="flex flex-col gap-2">
+                      <Link href="/auth/signup">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Sign Up for Full Details
+                        </Button>
+                      </Link>
+                      <p className="text-xs text-muted-foreground text-center">
+                        Create an account to view company details and place bids
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+              </div>
+            )}
+                </div>
+              </div>
     )
   }
 
+  // Authenticated user view
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Available Jobs</h1>
-        <p className="text-muted-foreground">
-          Browse and bid on available equipment service jobs
-        </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with Logo */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <Image
+                src="/logo.avif"
+                alt="MedEquipTech"
+                width={200}
+                height={60}
+                className="h-12 w-auto"
+              />
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/dashboard"
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            Available Jobs
+            {userAccess.role_tech && !userAccess.role_trainer && ' (Technician Only)'}
+            {userAccess.role_trainer && !userAccess.role_tech && ' (Trainer Only)'}
+          </h1>
+          <p className="text-muted-foreground">
+            {userAccess.role_tech && !userAccess.role_trainer && 'Browse and bid on available equipment service jobs'}
+            {userAccess.role_trainer && !userAccess.role_tech && 'Browse and bid on available training jobs'}
+            {(!userAccess.role_tech && !userAccess.role_trainer) && 'Browse and bid on available equipment service jobs'}
+          </p>
+        </div>
 
       {/* Filters */}
       <Card className="mb-6">
         <CardContent className="pt-6">
+          {/* Role-based filter notice */}
+          {userAccess.role_tech && !userAccess.role_trainer && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> As a technician, you can only view and bid on equipment service jobs.
+              </p>
+            </div>
+          )}
+          {userAccess.role_trainer && !userAccess.role_tech && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800">
+                <strong>Note:</strong> As a trainer, you can only view and bid on training jobs.
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <Input
@@ -152,27 +469,37 @@ export default function JobsPage() {
               />
             </div>
             <div>
-              <Select value={jobTypeFilter} onValueChange={setJobTypeFilter}>
+              <Select 
+                value={jobTypeFilter} 
+                onValueChange={handleJobTypeChange}
+                disabled={userAccess.role_tech && !userAccess.role_trainer || userAccess.role_trainer && !userAccess.role_tech}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                              <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="tech">Technician</SelectItem>
-            <SelectItem value="trainer">Trainer</SelectItem>
+                  {(!userAccess.role_tech || userAccess.role_trainer) && (
+                    <SelectItem value="all">All Types</SelectItem>
+                  )}
+                  {userAccess.role_tech && (
+                    <SelectItem value="tech">Technician</SelectItem>
+                  )}
+                  {userAccess.role_trainer && (
+                    <SelectItem value="trainer">Trainer</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={handleStatusChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                              <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="OPEN">Open</SelectItem>
-            <SelectItem value="BIDDING">Bidding</SelectItem>
-            <SelectItem value="AWARDED">Awarded</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="OPEN">Open</SelectItem>
+                  <SelectItem value="BIDDING">Bidding</SelectItem>
+                  <SelectItem value="AWARDED">Awarded</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -186,7 +513,7 @@ export default function JobsPage() {
         </CardContent>
       </Card>
 
-      {/* Jobs List */}
+      {/* Jobs List - Authenticated View */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -194,7 +521,17 @@ export default function JobsPage() {
       ) : filteredJobs.length === 0 ? (
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground">No jobs found matching your criteria.</p>
+            <p className="text-muted-foreground">
+              {userAccess.role_tech && !userAccess.role_trainer && 'No equipment service jobs found matching your criteria.'}
+              {userAccess.role_trainer && !userAccess.role_tech && 'No training jobs found matching your criteria.'}
+              {(!userAccess.role_tech && !userAccess.role_trainer) && 'No jobs found matching your criteria.'}
+            </p>
+            {userAccess.authenticated && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {userAccess.role_tech && !userAccess.role_trainer && 'Only equipment service jobs are available for technicians.'}
+                {userAccess.role_trainer && !userAccess.role_tech && 'Only training jobs are available for trainers.'}
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -234,43 +571,40 @@ export default function JobsPage() {
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground">
                           <MessageSquare className="h-4 w-4 mr-2" />
-                          {job.bids?.length || 0} bids
+                          {job.bids ? `${job.bids.length} bids` : '0 bids'}
                         </div>
                       </div>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {job.instructions_public}
-                    </p>
-
-                    <div className="flex items-center gap-2 text-sm">
-                      <Badge variant="outline">{job.job_type === 'tech' ? 'Technician' : 'Trainer'}</Badge>
-                      <span className="text-muted-foreground">Model: {job.model}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2 min-w-[120px]">
+            </div>
+          </div>
+          
+                  <div className="flex flex-col gap-2">
                     <Link href={`/jobs/${job.id}`}>
                       <Button variant="outline" className="w-full">
                         <Eye className="h-4 w-4 mr-2" />
                         View Details
                       </Button>
                     </Link>
-                    {job.status === 'OPEN' && (
-                      <Link href={`/jobs/${job.id}/bid`}>
+                    {job.can_bid ? (
+                      <Link href={`/jobs/${job.id}`}>
                         <Button className="w-full">
                           <DollarSign className="h-4 w-4 mr-2" />
                           Place Bid
                         </Button>
                       </Link>
+                    ) : (
+                      <Button variant="outline" className="w-full" disabled>
+                        <Lock className="h-4 w-4 mr-2" />
+                        {job.job_type === 'tech' ? 'Techs Only' : 'Trainers Only'}
+                      </Button>
                     )}
                   </div>
-                </div>
+          </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

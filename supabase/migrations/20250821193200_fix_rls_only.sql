@@ -19,9 +19,13 @@ DROP POLICY IF EXISTS "Admins can manage imports" ON imports;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS role_admin BOOLEAN DEFAULT FALSE;
 
 -- Update existing demo admin user to have role_admin = true
+-- Note: We need to join with auth.users to get the email
 UPDATE profiles 
 SET role_admin = true 
-WHERE email = 'demo.admin@medequiptech.com';
+WHERE user_id IN (
+    SELECT id FROM auth.users 
+    WHERE email = 'demo.admin@medequiptech.com'
+);
 
 -- Create index for admin role checking
 CREATE INDEX IF NOT EXISTS idx_profiles_admin ON profiles(role_admin);

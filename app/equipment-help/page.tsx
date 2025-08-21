@@ -413,7 +413,11 @@ export default function EquipmentHelpPage() {
 
               {/* Submit Button */}
               <div className="flex gap-4 pt-6 border-t">
-                <Link href="/dashboard">
+                <Link href={
+                  user && (isDemoUser ? demoRole === 'medspa' : user.user_metadata?.role === 'medspa') 
+                    ? "/dashboard" 
+                    : "/"
+                }>
                   <Button type="button" variant="outline">
                     Cancel
                   </Button>

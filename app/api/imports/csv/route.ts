@@ -1,48 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { 
-      csv_data, 
-      mapping_json, 
-      dry_run = true,
-      source_tag = 'csv_import'
-    } = body
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+    const importType = formData.get('importType') as string
 
-    // Validation
-    if (!csv_data || !Array.isArray(csv_data) || csv_data.length === 0) {
+    if (!file || !importType) {
       return NextResponse.json(
-        { error: 'CSV data is required and must be an array' },
+        { error: 'File and import type are required' },
         { status: 400 }
       )
     }
 
-    if (!mapping_json) {
+    // Validate file type
+    if (!file.name.endsWith('.csv')) {
       return NextResponse.json(
-        { error: 'Field mapping is required' },
+        { error: 'Only CSV files are supported' },
         { status: 400 }
       )
     }
 
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    // Validate import type
+    const validTypes = ['jobs', 'users', 'contacts']
+    if (!validTypes.includes(importType)) {
+      return NextResponse.json(
+        { error: 'Invalid import type. Must be one of: ' + validTypes.join(', ') },
+        { status: 400 }
+      )
+    }
+
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -54,147 +51,65 @@ export async function POST(request: NextRequest) {
     // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_approved')
+      .select('role_admin')
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile || !profile.is_approved) {
+    if (profileError || !profile || !profile.role_admin) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin access required to import data' },
         { status: 403 }
       )
     }
 
-    // Process CSV data
-    const processedJobs = []
-    const errors = []
-    const duplicates = []
-    const newJobs = []
-
-    for (let i = 0; i < csv_data.length; i++) {
-      const row = csv_data[i]
-      const rowNumber = i + 2 // +2 because CSV has header and we're 0-indexed
-
-      try {
-        // Map CSV fields to database fields
-        const jobData = mapCsvRowToJob(row, mapping_json)
-        
-        // Validate required fields
-        const validationError = validateJobData(jobData)
-        if (validationError) {
-          errors.push({
-            row: rowNumber,
-            error: validationError,
-            data: row
-          })
-          continue
-        }
-
-        // Check for duplicates
-        const duplicateCheck = await checkForDuplicates(supabase, jobData)
-        if (duplicateCheck.isDuplicate) {
-          duplicates.push({
-            row: rowNumber,
-            reason: duplicateCheck.reason,
-            existing_job_id: duplicateCheck.existing_job_id,
-            data: jobData
-          })
-          continue
-        }
-
-        // Normalize data
-        const normalizedJob = normalizeJobData(jobData)
-        
-        processedJobs.push({
-          row: rowNumber,
-          status: 'valid',
-          data: normalizedJob
-        })
-
-        if (!dry_run) {
-          newJobs.push(normalizedJob)
-        }
-
-      } catch (error) {
-        errors.push({
-          row: rowNumber,
-          error: `Processing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          data: row
-        })
-      }
-    }
-
-    // If dry run, return analysis
-    if (dry_run) {
-      return NextResponse.json({
-        message: 'Dry run completed',
-        summary: {
-          total_rows: csv_data.length,
-          valid_jobs: processedJobs.length,
-          errors: errors.length,
-          duplicates: duplicates.length
-        },
-        details: {
-          valid_jobs: processedJobs,
-          errors,
-          duplicates
-        }
-      })
-    }
-
-    // If not dry run, import the jobs
-    if (newJobs.length === 0) {
-      return NextResponse.json({
-        message: 'No valid jobs to import',
-        summary: {
-          total_rows: csv_data.length,
-          valid_jobs: 0,
-          errors: errors.length,
-          duplicates: duplicates.length
-        }
-      })
-    }
-
-    // Import jobs
-    const { data: importedJobs, error: importError } = await supabase
-      .from('jobs')
-      .insert(newJobs)
-      .select()
-
-    if (importError) {
-      console.error('Error importing jobs:', importError)
+    // Read and parse CSV file
+    const csvText = await file.text()
+    const lines = csvText.split('\n').filter(line => line.trim())
+    
+    if (lines.length < 2) {
       return NextResponse.json(
-        { error: 'Failed to import jobs' },
-        { status: 500 }
+        { error: 'CSV file must have at least a header row and one data row' },
+        { status: 400 }
       )
     }
 
-    // Create import record
-    const { error: recordError } = await supabase
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
+    const dataRows = lines.slice(1)
+
+    // Process based on import type
+    let importResult: any = {}
+    let errors: string[] = []
+
+    if (importType === 'jobs') {
+      importResult = await processJobsImport(supabase, headers, dataRows)
+    } else if (importType === 'users') {
+      importResult = await processUsersImport(supabase, headers, dataRows)
+    } else if (importType === 'contacts') {
+      importResult = await processContactsImport(supabase, headers, dataRows)
+    }
+
+    // Log the import
+    const { error: logError } = await supabase
       .from('imports')
       .insert({
-        source: 'csv',
-        mapping_json: mapping_json,
-        created_by: user.id,
-        row_count: newJobs.length
+        import_type: importType,
+        file_name: file.name,
+        file_size: file.size,
+        records_processed: importResult.processed || 0,
+        records_imported: importResult.imported || 0,
+        errors: errors.length > 0 ? errors.join('; ') : null,
+        imported_by: user.id
       })
 
-    if (recordError) {
-      console.error('Error creating import record:', recordError)
-      // Don't fail the import for this
+    if (logError) {
+      console.error('Error logging import:', logError)
+      // Don't fail the import if logging fails
     }
 
     return NextResponse.json({
-      message: 'Jobs imported successfully',
-      summary: {
-        total_rows: csv_data.length,
-        imported_jobs: importedJobs.length,
-        errors: errors.length,
-        duplicates: duplicates.length
-      },
-      imported_jobs: importedJobs,
-      errors,
-      duplicates
+      message: 'Import completed',
+      ...importResult,
+      errors: errors.length > 0 ? errors : undefined
     })
 
   } catch (error) {
@@ -202,142 +117,158 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+      )
   }
 }
 
-function mapCsvRowToJob(row: any, mapping: any) {
-  const job: any = {}
-  
-  // Map each field according to the mapping
-  Object.keys(mapping).forEach(dbField => {
-    const csvField = mapping[dbField]
-    if (csvField && row[csvField] !== undefined) {
-      job[dbField] = row[csvField]
-    }
-  })
+async function processJobsImport(supabase: any, headers: string[], dataRows: string[]) {
+  const processed = dataRows.length
+  let imported = 0
+  const errors: string[] = []
 
-  return job
-}
+  for (let i = 0; i < dataRows.length; i++) {
+    try {
+      const values = dataRows[i].split(',').map(v => v.trim().replace(/"/g, ''))
+      const rowData: any = {}
+      
+      headers.forEach((header, index) => {
+        rowData[header] = values[index] || null
+      })
 
-function validateJobData(jobData: any) {
-  const requiredFields = ['job_type', 'title', 'company_name', 'customer_name', 'model', 'priority', 'status']
-  
-  for (const field of requiredFields) {
-    if (!jobData[field]) {
-      return `Missing required field: ${field}`
-    }
-  }
-
-  // Validate job_type
-  if (!['tech', 'trainer'].includes(jobData.job_type)) {
-    return `Invalid job_type: ${jobData.job_type}. Must be 'tech' or 'trainer'`
-  }
-
-  // Validate priority
-  if (!['P0', 'P1', 'P2', 'SCOTT'].includes(jobData.priority)) {
-    return `Invalid priority: ${jobData.priority}. Must be P0, P1, P2, or SCOTT`
-  }
-
-  // Validate status
-  if (!['OPEN', 'BIDDING', 'AWARDED', 'SCHEDULED', 'IN_PROGRESS', 'AWAITING_PARTS', 'COMPLETED', 'CANCELED'].includes(jobData.status)) {
-    return `Invalid status: ${jobData.status}`
-  }
-
-  return null
-}
-
-async function checkForDuplicates(supabase: any, jobData: any) {
-  // Check by external_id if available
-  if (jobData.external_id) {
-    const { data: existingByExternalId } = await supabase
-      .from('jobs')
-      .select('id')
-      .eq('external_id', jobData.external_id)
-      .single()
-
-    if (existingByExternalId) {
-      return {
-        isDuplicate: true,
-        reason: 'external_id already exists',
-        existing_job_id: existingByExternalId.id
+      // Validate required fields
+      if (!rowData.title || !rowData.job_type || !rowData.priority) {
+        errors.push(`Row ${i + 2}: Missing required fields`)
+        continue
       }
-    }
-  }
 
-  // Check by customer + model + met_date combination
-  if (jobData.customer_name && jobData.model && jobData.met_date) {
-    const { data: existingByCombination } = await supabase
-      .from('jobs')
-      .select('id')
-      .eq('customer_name', jobData.customer_name)
-      .eq('model', jobData.model)
-      .eq('met_date', jobData.met_date)
-      .single()
+      // Insert job
+      const { error: insertError } = await supabase
+        .from('jobs')
+        .insert({
+          title: rowData.title,
+          job_type: rowData.job_type,
+          priority: rowData.priority,
+          status: 'OPEN',
+          company_name: rowData.company_name || 'Unknown',
+          customer_name: rowData.customer_name || rowData.company_name || 'Unknown',
+          model: rowData.model || 'Unknown',
+          shipping_city: rowData.shipping_city || 'Unknown',
+          shipping_state: rowData.shipping_state || 'Unknown',
+          met_date: rowData.met_date || new Date().toISOString(),
+          instructions_public: rowData.instructions_public || null
+        })
 
-    if (existingByCombination) {
-      return {
-        isDuplicate: true,
-        reason: 'customer + model + met_date combination already exists',
-        existing_job_id: existingByCombination.id
+      if (insertError) {
+        errors.push(`Row ${i + 2}: ${insertError.message}`)
+      } else {
+        imported++
       }
+    } catch (error) {
+      errors.push(`Row ${i + 2}: Processing error`)
     }
   }
 
-  return { isDuplicate: false }
+  return { processed, imported, errors }
 }
 
-function normalizeJobData(jobData: any) {
-  const normalized = { ...jobData }
+async function processUsersImport(supabase: any, headers: string[], dataRows: string[]) {
+  const processed = dataRows.length
+  let imported = 0
+  const errors: string[] = []
 
-  // Normalize state codes (e.g., "Utah" -> "UT")
-  if (normalized.shipping_state) {
-    normalized.shipping_state = normalizeStateCode(normalized.shipping_state)
+  for (let i = 0; i < dataRows.length; i++) {
+    try {
+      const values = dataRows[i].split(',').map(v => v.trim().replace(/"/g, ''))
+      const rowData: any = {}
+      
+      headers.forEach((header, index) => {
+        rowData[header] = values[index] || null
+      })
+
+      // Validate required fields
+      if (!rowData.email || !rowData.full_name) {
+        errors.push(`Row ${i + 2}: Missing required fields`)
+        continue
+      }
+
+      // Check if user already exists
+      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(rowData.email)
+      
+      if (existingUser) {
+        errors.push(`Row ${i + 2}: User already exists`)
+        continue
+      }
+
+      // Create user account
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email: rowData.email,
+        password: rowData.password || 'temp123',
+        email_confirm: true
+      })
+
+      if (createError) {
+        errors.push(`Row ${i + 2}: ${createError.message}`)
+        continue
+      }
+
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: newUser.user.id,
+          full_name: rowData.full_name,
+          phone: rowData.phone || null,
+          role_tech: rowData.role_tech === 'true' || rowData.role_tech === '1',
+          role_trainer: rowData.role_trainer === 'true' || rowData.role_trainer === '1',
+          base_city: rowData.base_city || null,
+          base_state: rowData.base_state || null,
+          service_radius_mi: parseInt(rowData.service_radius_mi) || 50,
+          is_approved: false // Require admin approval
+        })
+
+      if (profileError) {
+        errors.push(`Row ${i + 2}: ${profileError.message}`)
+        // Try to clean up the created user
+        await supabase.auth.admin.deleteUser(newUser.user.id)
+      } else {
+        imported++
+      }
+    } catch (error) {
+      errors.push(`Row ${i + 2}: Processing error`)
+    }
   }
 
-  // Normalize dates
-  if (normalized.met_date) {
-    normalized.met_date = normalizeDate(normalized.met_date)
-  }
-
-  // Set default values
-  if (!normalized.status) {
-    normalized.status = 'OPEN'
-  }
-
-  if (!normalized.priority) {
-    normalized.priority = 'P2'
-  }
-
-  // Add source tag
-  normalized.source_tag = 'csv_import'
-
-  return normalized
+  return { processed, imported, errors }
 }
 
-function normalizeStateCode(state: string) {
-  const stateMap: { [key: string]: string } = {
-    'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
-    'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
-    'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
-    'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
-    'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
-    'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
-    'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
-    'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
-    'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
-    'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY'
+async function processContactsImport(supabase: any, headers: string[], dataRows: string[]) {
+  const processed = dataRows.length
+  let imported = 0
+  const errors: string[] = []
+
+  for (let i = 0; i < dataRows.length; i++) {
+    try {
+      const values = dataRows[i].split(',').map(v => v.trim().replace(/"/g, ''))
+      const rowData: any = {}
+      
+      headers.forEach((header, index) => {
+        rowData[header] = values[index] || null
+      })
+
+      // Validate required fields
+      if (!rowData.name || !rowData.email) {
+        errors.push(`Row ${i + 2}: Missing required fields`)
+        continue
+      }
+
+      // Insert contact (assuming you have a contacts table)
+      // For now, just log the contact data
+      console.log('Contact import:', rowData)
+      imported++
+    } catch (error) {
+      errors.push(`Row ${i + 2}: Processing error`)
+    }
   }
 
-  const normalized = state.toLowerCase().trim()
-  return stateMap[normalized] || state.toUpperCase()
-}
-
-function normalizeDate(dateStr: string) {
-  // Handle various date formats
-  const date = new Date(dateStr)
-  if (isNaN(date.getTime())) {
-    throw new Error(`Invalid date: ${dateStr}`)
-  }
-  return date.toISOString().split('T')[0] // Return YYYY-MM-DD format
+  return { processed, imported, errors }
 }

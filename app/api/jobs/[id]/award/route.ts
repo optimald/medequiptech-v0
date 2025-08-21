@@ -1,39 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id: job_id } = params
+    const jobId = params.id
     const body = await request.json()
-    const { awarded_user_id } = body
+    const { bid_id, awarded_user_id, notes } = body
 
-    if (!job_id || !awarded_user_id) {
+    if (!jobId || !bid_id || !awarded_user_id) {
       return NextResponse.json(
-        { error: 'Missing required fields: job_id, awarded_user_id' },
+        { error: 'Job ID, bid ID, and awarded user ID are required' },
         { status: 400 }
       )
     }
 
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -45,94 +37,90 @@ export async function POST(
     // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_approved')
+      .select('role_admin')
       .eq('user_id', user.id)
       .single()
 
-    if (profileError || !profile || !profile.is_approved) {
+    if (profileError || !profile || !profile.role_admin) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: 'Admin access required to award jobs' },
         { status: 403 }
       )
     }
 
-    // Check if job exists and is in a state that can be awarded
+    // Verify the job exists and is in BIDDING status
     const { data: job, error: jobError } = await supabase
       .from('jobs')
       .select('id, status, title, job_type')
-      .eq('id', job_id)
-      .in('status', ['OPEN', 'BIDDING'])
+      .eq('id', jobId)
+      .eq('status', 'BIDDING')
       .single()
 
     if (jobError || !job) {
       return NextResponse.json(
-        { error: 'Job not found or not available for award' },
+        { error: 'Job not found or not in bidding status' },
         { status: 404 }
       )
     }
 
-    // Check if the awarded user has an active bid on this job
+    // Verify the bid exists and is for this job
     const { data: bid, error: bidError } = await supabase
       .from('bids')
-      .select('id, ask_price, note')
-      .eq('job_id', job_id)
-      .eq('bidder_id', awarded_user_id)
+      .select('id, bidder_id, ask_price, status')
+      .eq('id', bid_id)
+      .eq('job_id', jobId)
       .eq('status', 'submitted')
       .single()
 
     if (bidError || !bid) {
       return NextResponse.json(
-        { error: 'User does not have an active bid on this job' },
-        { status: 400 }
-      )
-    }
-
-    // Check if the awarded user is approved and has the right role
-    const { data: awardedProfile, error: awardedProfileError } = await supabase
-      .from('profiles')
-      .select('is_approved, role_tech, role_trainer')
-      .eq('user_id', awarded_user_id)
-      .single()
-
-    if (awardedProfileError || !awardedProfile) {
-      return NextResponse.json(
-        { error: 'Awarded user profile not found' },
+        { error: 'Bid not found or not valid for this job' },
         { status: 404 }
       )
     }
 
-    if (!awardedProfile.is_approved) {
+    // Verify the awarded user exists and is approved
+    const { data: awardedUser, error: userError } = await supabase
+      .from('profiles')
+      .select('id, is_approved, role_tech, role_trainer')
+      .eq('user_id', awarded_user_id)
+      .eq('is_approved', true)
+      .single()
+
+    if (userError || !awardedUser) {
       return NextResponse.json(
-        { error: 'Cannot award job to unapproved user' },
+        { error: 'Awarded user not found or not approved' },
+        { status: 404 }
+      )
+    }
+
+    // Verify the awarded user has the right role for this job
+    if (job.job_type === 'tech' && !awardedUser.role_tech) {
+      return NextResponse.json(
+        { error: 'Awarded user must be a technician for tech jobs' },
         { status: 400 }
       )
     }
 
-    // Check role compatibility
-    if (job.job_type === 'tech' && !awardedProfile.role_tech) {
+    if (job.job_type === 'trainer' && !awardedUser.role_trainer) {
       return NextResponse.json(
-        { error: 'Cannot award technician job to non-technician user' },
+        { error: 'Awarded user must be a trainer for trainer jobs' },
         { status: 400 }
       )
     }
 
-    if (job.job_type === 'trainer' && !awardedProfile.role_trainer) {
-      return NextResponse.json(
-        { error: 'Cannot award trainer job to non-trainer user' },
-        { status: 400 }
-      )
-    }
-
-    // Create award record
-    const { data: award, error: awardError } = await supabase
+    // Start a transaction to update multiple tables
+    const { error: awardError } = await supabase
       .from('awards')
       .insert({
-        job_id,
-        awarded_user_id,
-        awarded_by: user.id
+        job_id: jobId,
+        bid_id: bid_id,
+        awarded_user_id: awarded_user_id,
+        awarded_by: user.id,
+        award_amount: bid.ask_price,
+        notes: notes || null,
+        status: 'active'
       })
-      .select()
-      .single()
 
     if (awardError) {
       console.error('Error creating award:', awardError)
@@ -142,68 +130,60 @@ export async function POST(
       )
     }
 
+    // Update the bid status to accepted
+    const { error: bidUpdateError } = await supabase
+      .from('bids')
+      .update({ status: 'accepted' })
+      .eq('id', bid_id)
+
+    if (bidUpdateError) {
+      console.error('Error updating bid status:', bidUpdateError)
+      return NextResponse.json(
+        { error: 'Failed to update bid status' },
+        { status: 500 }
+      )
+    }
+
     // Update job status to AWARDED
     const { error: jobUpdateError } = await supabase
       .from('jobs')
-      .update({ status: 'AWARDED' })
-      .eq('id', job_id)
+      .update({ 
+        status: 'AWARDED',
+        awarded_to: awarded_user_id,
+        awarded_at: new Date().toISOString()
+      })
+      .eq('id', jobId)
 
     if (jobUpdateError) {
       console.error('Error updating job status:', jobUpdateError)
-      // Try to rollback the award
-      await supabase.from('awards').delete().eq('id', award.id)
       return NextResponse.json(
         { error: 'Failed to update job status' },
         { status: 500 }
       )
     }
 
-    // Update the winning bid status to accepted
-    const { error: bidUpdateError } = await supabase
-      .from('bids')
-      .update({ status: 'accepted' })
-      .eq('id', bid.id)
-
-    if (bidUpdateError) {
-      console.error('Error updating bid status:', bidUpdateError)
-      // Don't fail the award for this
-    }
-
-    // Update all other bids to rejected
+    // Reject all other bids on this job
     const { error: rejectBidsError } = await supabase
       .from('bids')
       .update({ status: 'rejected' })
-      .eq('job_id', job_id)
-      .neq('bidder_id', awarded_user_id)
-      .eq('status', 'submitted')
+      .eq('job_id', jobId)
+      .neq('id', bid_id)
 
     if (rejectBidsError) {
       console.error('Error rejecting other bids:', rejectBidsError)
-      // Don't fail the award for this
+      // Don't fail the award if bid rejection fails
     }
 
-    // Send award notice email (we'll implement this next)
-    try {
-      await sendAwardNotice({
-        job_id,
-        job_title: job.title,
-        awarded_user_id,
-        ask_price: bid.ask_price
-      })
-    } catch (emailError) {
-      console.error('Failed to send award notice email:', emailError)
-      // Don't fail the award if email fails
-    }
+    // TODO: Send notification to awarded user
+    // TODO: Send notification to rejected bidders
+    // TODO: Send email notifications
 
     return NextResponse.json({
       message: 'Job awarded successfully',
-      award: {
-        id: award.id,
-        job_id: award.job_id,
-        awarded_user_id: award.awarded_user_id,
-        awarded_at: award.awarded_at
-      }
-    })
+      job_id: jobId,
+      awarded_user_id: awarded_user_id,
+      award_amount: bid.ask_price
+    }, { status: 201 })
 
   } catch (error) {
     console.error('Job award error:', error)
@@ -212,15 +192,4 @@ export async function POST(
       { status: 500 }
       )
   }
-}
-
-async function sendAwardNotice(awardData: {
-  job_id: string
-  job_title: string
-  awarded_user_id: string
-  ask_price: number
-}) {
-  // TODO: Implement Resend email sending
-  // For now, just log the notice
-  console.log('AWARD NOTICE:', awardData)
 }

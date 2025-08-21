@@ -1,25 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from auth cookie
-    const cookieStore = cookies()
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    // Create Supabase client with auth context
+    const supabase = createRouteHandlerClient({ cookies })
 
     // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      cookieStore.get('sb-access-token')?.value
-    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json(
@@ -31,7 +23,7 @@ export async function GET(request: NextRequest) {
     // Get user profile to determine role
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role_tech, role_trainer, is_approved')
+      .select('role_tech, role_trainer, role_admin')
       .eq('user_id', user.id)
       .single()
 
@@ -43,85 +35,55 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    let stats = {
-      openJobs: 0,
-      myBids: 0,
-      awardedJobs: 0,
-      pendingApprovals: 0,
-      activeBids: 0,
-      totalUsers: 0
-    }
+    let stats = {}
 
-    // If user is approved, get their stats
-    if (profile.is_approved) {
-      // Get open jobs count (filtered by user's role)
-      let jobTypeFilter = []
-      if (profile.role_tech) jobTypeFilter.push('tech')
-      if (profile.role_trainer) jobTypeFilter.push('trainer')
+    if (profile.role_admin) {
+      // Admin stats
+      const [openJobsResult, totalUsersResult, pendingApprovalsResult] = await Promise.all([
+        supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('status', 'OPEN'),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_approved', false)
+      ])
 
-      if (jobTypeFilter.length > 0) {
-        const { count: openJobsCount } = await supabase
-          .from('jobs')
-          .select('*', { count: 'exact', head: true })
-          .in('status', ['OPEN', 'BIDDING'])
-          .in('job_type', jobTypeFilter)
-
-        stats.openJobs = openJobsCount || 0
+      stats = {
+        openJobs: openJobsResult.count || 0,
+        totalUsers: totalUsersResult.count || 0,
+        pendingApprovals: pendingApprovalsResult.count || 0
       }
+    } else if (profile.role_tech || profile.role_trainer) {
+      // Tech/Trainer stats
+      const [openJobsResult, myBidsResult, awardedJobsResult] = await Promise.all([
+        supabase.from('jobs').select('id', { count: 'exact', head: true })
+          .eq('status', 'OPEN')
+          .eq('job_type', profile.role_tech ? 'tech' : 'trainer'),
+        supabase.from('bids').select('id', { count: 'exact', head: true })
+          .eq('bidder_id', user.id)
+          .in('status', ['submitted', 'accepted']),
+        supabase.from('awards').select('id', { count: 'exact', head: true })
+          .eq('awarded_user_id', user.id)
+      ])
 
-      // Get user's active bids count
-      const { count: myBidsCount } = await supabase
-        .from('bids')
-        .select('*', { count: 'exact', head: true })
-        .eq('bidder_id', user.id)
-        .eq('status', 'submitted')
-
-      stats.myBids = myBidsCount || 0
-
-      // Get user's awarded jobs count
-      const { count: awardedJobsCount } = await supabase
-        .from('awards')
-        .select('*', { count: 'exact', head: true })
-        .eq('awarded_user_id', user.id)
-
-      stats.awardedJobs = awardedJobsCount || 0
+      stats = {
+        openJobs: openJobsResult.count || 0,
+        myBids: myBidsResult.count || 0,
+        awardedJobs: awardedJobsResult.count || 0
+      }
+    } else {
+      // MedSpa stats
+      stats = {
+        openJobs: 0,
+        myBids: 0,
+        awardedJobs: 0
+      }
     }
 
-    // If user is admin (has both roles), get admin stats
-    if (profile.role_tech && profile.role_trainer && profile.is_approved) {
-      // Get pending approvals count
-      const { count: pendingApprovalsCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_approved', false)
-
-      stats.pendingApprovals = pendingApprovalsCount || 0
-
-      // Get total active bids count
-      const { count: activeBidsCount } = await supabase
-        .from('bids')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'submitted')
-
-      stats.activeBids = activeBidsCount || 0
-
-      // Get total users count
-      const { count: totalUsersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-
-      stats.totalUsers = totalUsersCount || 0
-    }
-
-    return NextResponse.json({
-      stats
-    })
+    return NextResponse.json({ stats })
 
   } catch (error) {
     console.error('Stats fetch error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+      )
   }
 }
