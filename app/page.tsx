@@ -1,8 +1,20 @@
+import Image from 'next/image'
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/logo.avif"
+              alt="MED Equipment Tech Logo"
+              width={120}
+              height={120}
+              className="rounded-lg shadow-lg"
+              priority
+            />
+          </div>
           <h1 className="text-4xl font-bold text-foreground mb-4">
             MED Equipment Tech
           </h1>
@@ -13,7 +25,7 @@ export default function Home() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          <div className="bg-card p-6 rounded-lg border shadow-sm">
+          <div className="bg-card p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-xl font-semibold mb-2">For Technicians</h3>
             <p className="text-muted-foreground mb-4">
               Browse open tech jobs, submit competitive bids, and grow your client base.
@@ -23,7 +35,7 @@ export default function Home() {
             </button>
           </div>
           
-          <div className="bg-card p-6 rounded-lg border shadow-sm">
+          <div className="bg-card p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-xl font-semibold mb-2">For Trainers</h3>
             <p className="text-muted-foreground mb-4">
               Find training opportunities and connect with companies needing your expertise.
@@ -33,7 +45,7 @@ export default function Home() {
             </button>
           </div>
           
-          <div className="bg-card p-6 rounded-lg border shadow-sm">
+          <div className="bg-card p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-xl font-semibold mb-2">For Companies</h3>
             <p className="text-muted-foreground mb-4">
               Post jobs, review bids, and find qualified professionals for your needs.

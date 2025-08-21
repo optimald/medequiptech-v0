@@ -3,30 +3,30 @@
 ## Project Setup & Infrastructure
 
 ### Environment & Configuration
-- [ ] **TODO** Set up Vercel project for frontend + API
-- [ ] **TODO** Set up Supabase project (DB + Auth)
-- [ ] **TODO** Configure environment variables (DATABASE_URL, SUPABASE_ANON_KEY, RESEND_API_KEY, etc.)
+- [x] **COMPLETE** Set up Vercel project for frontend + API
+- [x] **COMPLETE** Set up Supabase project (DB + Auth)
+- [x] **COMPLETE** Configure environment variables (DATABASE_URL, SUPABASE_ANON_KEY, RESEND_API_KEY, etc.)
 - [ ] **TODO** Set up Resend account and verify domain (SPF/DKIM)
 - [ ] **TODO** Set up Twilio account (optional V0)
 - [ ] **TODO** Set up AWS S3 bucket for future attachments (optional V0)
 
 ### Database Setup
-- [ ] **TODO** Create Supabase database with Postgres
-- [ ] **TODO** Execute DDL scripts for core tables (profiles, jobs, bids, awards, etc.)
-- [ ] **TODO** Set up Row Level Security (RLS) policies
-- [ ] **TODO** Create database indexes for performance
-- [ ] **TODO** Set up Supabase Auth with email+password
+- [x] **COMPLETE** Create Supabase database with Postgres
+- [x] **COMPLETE** Execute DDL scripts for core tables (profiles, jobs, bids, awards, etc.)
+- [x] **COMPLETE** Set up Row Level Security (RLS) policies
+- [x] **COMPLETE** Create database indexes for performance
+- [x] **COMPLETE** Set up Supabase Auth with email+password
 
 ## Frontend Development
 
 ### Core Structure
-- [ ] **TODO** Initialize Next.js project with App Router
-- [ ] **TODO** Set up Tailwind CSS and shadcn/ui components
+- [x] **COMPLETE** Initialize Next.js project with App Router
+- [x] **COMPLETE** Set up Tailwind CSS and shadcn/ui components
 - [ ] **TODO** Configure PWA settings for Vercel deployment
 - [ ] **TODO** Set up authentication context and providers
 
 ### Public Pages (No Login Required)
-- [ ] **TODO** Create public job board landing page
+- [x] **COMPLETE** Create public job board landing page
 - [ ] **TODO** Implement job listing grid/table with limited fields
 - [ ] **TODO** Add job filtering by role, city, state
 - [ ] **TODO** Create job teaser/detail view (limited info)
