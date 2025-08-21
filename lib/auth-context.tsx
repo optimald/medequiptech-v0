@@ -19,6 +19,30 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Demo user credentials
+const DEMO_USERS = {
+  technician: {
+    email: 'demo.technician@medequiptech.com',
+    password: 'demo123',
+    role: 'technician'
+  },
+  trainer: {
+    email: 'demo.trainer@medequiptech.com',
+    password: 'demo123',
+    role: 'trainer'
+  },
+  medspa: {
+    email: 'demo.medspa@medequiptech.com',
+    password: 'demo123',
+    role: 'medspa'
+  },
+  admin: {
+    email: 'demo.admin@medequiptech.com',
+    password: 'demo123',
+    role: 'admin'
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
@@ -27,11 +51,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [demoRole, setDemoRole] = useState<string | null>(null)
 
   useEffect(() => {
-    // Get initial session
+    // Get initial session and restore demo user state
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
       setUser(session?.user ?? null)
+      
+      // Restore demo user state from localStorage if available
+      const storedDemoRole = localStorage.getItem('demoRole')
+      const storedIsDemoUser = localStorage.getItem('isDemoUser')
+      
+      if (storedDemoRole && storedIsDemoUser === 'true') {
+        setIsDemoUser(true)
+        setDemoRole(storedDemoRole)
+      }
+      
       setLoading(false)
     }
 
@@ -42,6 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
+        
+        // If user signs out, clear demo state
+        if (event === 'SIGNED_OUT') {
+          setIsDemoUser(false)
+          setDemoRole(null)
+          localStorage.removeItem('demoRole')
+          localStorage.removeItem('isDemoUser')
+        }
+        
         setLoading(false)
       }
     )
@@ -91,52 +134,105 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInDemo = async (role: string) => {
     try {
-      // Map role to demo email
-      const demoEmails = {
-        technician: 'demo.technician@medequiptech.com',
-        trainer: 'demo.trainer@medequiptech.com',
-        medspa: 'demo.medspa@medequiptech.com',
-        admin: 'demo.admin@medequiptech.com'
-      }
-      
-      const email = demoEmails[role as keyof typeof demoEmails]
-      if (!email) {
+      const demoUser = DEMO_USERS[role as keyof typeof DEMO_USERS]
+      if (!demoUser) {
         return { error: { message: 'Invalid demo role' } }
       }
 
-      // Sign in with demo credentials
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'demo123'
+      // First, try to sign in with existing demo user
+      let { error, data } = await supabase.auth.signInWithPassword({
+        email: demoUser.email,
+        password: demoUser.password
       })
+
+      // If demo user doesn't exist, create them
+      if (error && error.message.includes('Invalid login credentials')) {
+        console.log('Creating demo user for role:', role)
+        
+        // Create the demo user
+        const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
+          email: demoUser.email,
+          password: demoUser.password,
+          options: {
+            data: {
+              full_name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+              role: role
+            }
+          }
+        })
+
+        if (signUpError) {
+          console.error('Error creating demo user:', signUpError)
+          return { error: signUpError }
+        }
+
+        // Create profile for the demo user
+        if (signUpData.user) {
+          const profileData = {
+            user_id: signUpData.user.id,
+            full_name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+            phone: '555-000-0000',
+            role_tech: role === 'technician' || role === 'admin',
+            role_trainer: role === 'trainer' || role === 'admin',
+            base_city: 'Demo City',
+            base_state: 'CA',
+            service_radius_mi: 50,
+            is_approved: true, // Demo users are pre-approved
+            role_admin: role === 'admin'
+          }
+
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert(profileData)
+
+          if (profileError) {
+            console.error('Error creating demo profile:', profileError)
+            // Continue anyway as the user was created
+          }
+
+          // Now sign in with the newly created user
+          const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
+            email: demoUser.email,
+            password: demoUser.password
+          })
+
+          if (signInError) {
+            return { error: signInError }
+          }
+
+          data = signInData
+        }
+      }
 
       if (error) {
         return { error }
       }
 
-      // Set demo user state
+      // Set demo user state and persist to localStorage
       if (data.user) {
         setUser(data.user)
         setIsDemoUser(true)
         setDemoRole(role)
+        localStorage.setItem('demoRole', role)
+        localStorage.setItem('isDemoUser', 'true')
       }
 
       return { error: null }
     } catch (err) {
+      console.error('Error in signInDemo:', err)
       return { error: { message: 'Failed to sign in demo user' } }
     }
   }
 
   const signOut = async () => {
-    if (isDemoUser) {
-      // Clear demo user state
-      setUser(null)
-      setIsDemoUser(false)
-      setDemoRole(null)
-    } else {
-      // Regular signout
-      await supabase.auth.signOut()
-    }
+    // Clear demo user state
+    setIsDemoUser(false)
+    setDemoRole(null)
+    localStorage.removeItem('demoRole')
+    localStorage.removeItem('isDemoUser')
+    
+    // Sign out from Supabase
+    await supabase.auth.signOut()
   }
 
   const refreshUser = async () => {

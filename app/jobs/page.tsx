@@ -38,8 +38,8 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [jobTypeFilter, setJobTypeFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const [jobTypeFilter, setJobTypeFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
     if (user) {
@@ -96,10 +96,18 @@ export default function JobsPage() {
   }
 
   const filteredJobs = jobs.filter(job => {
+    // Search filtering
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          job.model.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch
+    
+    // Job type filtering
+    const matchesJobType = !jobTypeFilter || jobTypeFilter === 'all' || job.job_type === jobTypeFilter
+    
+    // Status filtering
+    const matchesStatus = !statusFilter || statusFilter === 'all' || job.status === statusFilter
+    
+    return matchesSearch && matchesJobType && matchesStatus
   })
 
   if (!user) {

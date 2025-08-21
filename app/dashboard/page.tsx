@@ -36,6 +36,22 @@ export default function Dashboard() {
 
   const fetchUserProfile = async () => {
     try {
+      // For demo users, create a synthetic profile based on their role
+      if (isDemoUser && demoRole) {
+        const demoProfile: UserProfile = {
+          full_name: `Demo ${demoRole.charAt(0).toUpperCase() + demoRole.slice(1)}`,
+          role_tech: demoRole === 'technician' || demoRole === 'admin',
+          role_trainer: demoRole === 'trainer' || demoRole === 'admin',
+          is_approved: true, // Demo users are pre-approved
+          base_city: 'Demo City',
+          base_state: 'CA'
+        }
+        setProfile(demoProfile)
+        setLoading(false)
+        return
+      }
+
+      // For regular users, fetch profile from API
       const response = await fetch('/api/users/profile')
       if (response.ok) {
         const data = await response.json()
@@ -50,6 +66,18 @@ export default function Dashboard() {
 
   const fetchUserStats = async () => {
     try {
+      // For demo users, create synthetic stats
+      if (isDemoUser && demoRole) {
+        const demoStats = {
+          openJobs: demoRole === 'technician' || demoRole === 'trainer' ? 12 : 0,
+          myBids: demoRole === 'technician' || demoRole === 'trainer' ? 3 : 0,
+          awardedJobs: demoRole === 'technician' || demoRole === 'trainer' ? 2 : 0
+        }
+        setStats(demoStats)
+        return
+      }
+
+      // For regular users, fetch stats from API
       const response = await fetch('/api/users/stats')
       if (response.ok) {
         const data = await response.json()
@@ -79,7 +107,7 @@ export default function Dashboard() {
     profile?.role_tech ? 'technician' :
     profile?.role_trainer ? 'trainer' : 'medspa'
 
-  // Show approval pending message if not approved
+  // Show approval pending message if not approved (but demo users are always approved)
   if (!isDemoUser && profile && !profile.is_approved) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -122,19 +150,19 @@ export default function Dashboard() {
   // Render role-specific dashboard
   switch (userType) {
     case 'technician':
-      return <TechnicianDashboard profile={profile} stats={stats} />
+      return <TechnicianDashboard profile={profile} stats={stats} isDemoUser={isDemoUser} />
     case 'trainer':
-      return <TrainerDashboard profile={profile} stats={stats} />
+      return <TrainerDashboard profile={profile} stats={stats} isDemoUser={isDemoUser} />
     case 'medspa':
-      return <MedSpaDashboard profile={profile} stats={stats} />
+      return <MedSpaDashboard profile={profile} stats={stats} isDemoUser={isDemoUser} />
     case 'admin':
-      return <AdminDashboard profile={profile} stats={stats} />
+      return <AdminDashboard profile={profile} stats={stats} isDemoUser={isDemoUser} />
     default:
-      return <DefaultDashboard profile={profile} stats={stats} />
+      return <DefaultDashboard profile={profile} stats={stats} isDemoUser={isDemoUser} />
   }
 }
 
-function TechnicianDashboard({ profile, stats }: { profile: UserProfile | null, stats: any }) {
+function TechnicianDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with Logo and Title */}
@@ -143,6 +171,7 @@ function TechnicianDashboard({ profile, stats }: { profile: UserProfile | null, 
           <h1 className="text-3xl font-bold mb-2">Technician Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back, {profile?.full_name || 'Technician'}! Manage your laser equipment repair jobs.
+            {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
         <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
@@ -165,13 +194,13 @@ function TechnicianDashboard({ profile, stats }: { profile: UserProfile | null, 
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">My Active Bids</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">My Bids</CardTitle>
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.myBids}</div>
             <p className="text-xs text-muted-foreground">
-              Pending review
+              Active bids placed
             </p>
           </CardContent>
         </Card>
@@ -259,7 +288,7 @@ function TechnicianDashboard({ profile, stats }: { profile: UserProfile | null, 
   )
 }
 
-function TrainerDashboard({ profile, stats }: { profile: UserProfile | null, stats: any }) {
+function TrainerDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with Logo and Title */}
@@ -268,6 +297,7 @@ function TrainerDashboard({ profile, stats }: { profile: UserProfile | null, sta
           <h1 className="text-3xl font-bold mb-2">Trainer Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back, {profile?.full_name || 'Trainer'}! Manage your staff training and certification jobs.
+            {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
         <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
@@ -290,13 +320,13 @@ function TrainerDashboard({ profile, stats }: { profile: UserProfile | null, sta
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">My Active Bids</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">My Bids</CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.myBids}</div>
             <p className="text-xs text-muted-foreground">
-              Pending review
+              Active bids placed
             </p>
           </CardContent>
         </Card>
@@ -332,8 +362,6 @@ function TrainerDashboard({ profile, stats }: { profile: UserProfile | null, sta
             </Button>
           </CardContent>
         </Card>
-
-
 
         <Card>
           <CardHeader>
@@ -386,7 +414,7 @@ function TrainerDashboard({ profile, stats }: { profile: UserProfile | null, sta
   )
 }
 
-function MedSpaDashboard({ profile, stats }: { profile: UserProfile | null, stats: any }) {
+function MedSpaDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with Logo and Title */}
@@ -395,6 +423,7 @@ function MedSpaDashboard({ profile, stats }: { profile: UserProfile | null, stat
           <h1 className="text-3xl font-bold mb-2">MedSpa Practice Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back, {profile?.full_name || 'MedSpa Practice'}! Get equipment help and staff training.
+            {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
         <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
@@ -408,7 +437,7 @@ function MedSpaDashboard({ profile, stats }: { profile: UserProfile | null, stat
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Available</div>
+            <div className="text-2xl font-bold">Request</div>
             <p className="text-xs text-muted-foreground">
               Get technical support
             </p>
@@ -421,22 +450,22 @@ function MedSpaDashboard({ profile, stats }: { profile: UserProfile | null, stat
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Available</div>
+            <div className="text-2xl font-bold">Request</div>
             <p className="text-xs text-muted-foreground">
-              Certification programs
+              Schedule training sessions
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Support Status</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Active</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              Full access granted
+              Currently in progress
             </p>
           </CardContent>
         </Card>
@@ -446,9 +475,9 @@ function MedSpaDashboard({ profile, stats }: { profile: UserProfile | null, stat
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>Equipment Support</CardTitle>
+            <CardTitle>Equipment Help</CardTitle>
             <CardDescription>
-              Get help with laser equipment issues and maintenance
+              Submit a request for laser equipment repair or maintenance
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -464,49 +493,45 @@ function MedSpaDashboard({ profile, stats }: { profile: UserProfile | null, stat
           <CardHeader>
             <CardTitle>Staff Training</CardTitle>
             <CardDescription>
-              Schedule staff training and certification sessions
+              Request staff training and certification services
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/equipment-help">
-                Request Trainer
+            <Button asChild className="w-full">
+              <Link href="/request-trainer">
+                Request Training
               </Link>
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Information */}
+      {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>How It Works</CardTitle>
+          <CardTitle>Recent Activity</CardTitle>
           <CardDescription>
-            Understanding your MedSpa Practice access
+            Your latest service requests and updates
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-start space-x-4 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+            <div className="flex items-center space-x-4 p-3 bg-muted rounded-lg">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">Equipment Help</p>
-                <p className="text-xs text-muted-foreground">
-                  Contact our technical team for immediate assistance with laser equipment issues, 
-                  maintenance questions, and troubleshooting support.
-                </p>
+                <p className="text-sm font-medium">Equipment help request submitted</p>
+                <p className="text-xs text-muted-foreground">1 day ago</p>
               </div>
+              <Badge variant="secondary">Pending</Badge>
             </div>
             
-            <div className="flex items-start space-x-4 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+            <div className="flex items-center space-x-4 p-3 bg-muted rounded-lg">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">Staff Training</p>
-                <p className="text-xs text-muted-foreground">
-                  Schedule comprehensive training sessions for your staff on laser equipment operation, 
-                  safety protocols, and treatment procedures.
-                </p>
+                <p className="text-sm font-medium">Staff training session completed</p>
+                <p className="text-xs text-muted-foreground">3 days ago</p>
               </div>
+              <Badge variant="default">Completed</Badge>
             </div>
           </div>
         </CardContent>
@@ -515,7 +540,7 @@ function MedSpaDashboard({ profile, stats }: { profile: UserProfile | null, stat
   )
 }
 
-function AdminDashboard({ profile, stats }: { profile: UserProfile | null, stats: any }) {
+function AdminDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with Logo and Title */}
@@ -523,7 +548,8 @@ function AdminDashboard({ profile, stats }: { profile: UserProfile | null, stats
         <div>
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, {profile?.full_name || 'Admin'}! Manage the platform and oversee operations.
+            Welcome back, {profile?.full_name || 'Administrator'}! Manage the platform and users.
+            {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
         <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
@@ -534,7 +560,7 @@ function AdminDashboard({ profile, stats }: { profile: UserProfile | null, stats
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Open Jobs</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
+            <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.openJobs || 0}</div>
@@ -559,26 +585,26 @@ function AdminDashboard({ profile, stats }: { profile: UserProfile | null, stats
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Bids</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeBids || 0}</div>
+            <div className="text-2xl font-bold">{stats.totalUsers || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Under review
+              Registered users
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Active Bids</CardTitle>
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers || 0}</div>
+            <div className="text-2xl font-bold">{stats.myBids || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Registered accounts
+              Current bids
             </p>
           </CardContent>
         </Card>
@@ -588,29 +614,13 @@ function AdminDashboard({ profile, stats }: { profile: UserProfile | null, stats
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader>
-            <CardTitle>User Management</CardTitle>
+            <CardTitle>Manage Jobs</CardTitle>
             <CardDescription>
-              Approve new users and manage existing accounts
+              Create, edit, and manage job listings
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/admin/users">
-                Manage Users
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Job Management</CardTitle>
-            <CardDescription>
-              Create, edit, and manage jobs and bids
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" className="w-full">
               <Link href="/admin/jobs">
                 Manage Jobs
               </Link>
@@ -620,56 +630,63 @@ function AdminDashboard({ profile, stats }: { profile: UserProfile | null, stats
 
         <Card>
           <CardHeader>
-            <CardTitle>Bulk Email</CardTitle>
+            <CardTitle>User Approvals</CardTitle>
             <CardDescription>
-              Send curated email campaigns to users
+              Review and approve new user registrations
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild variant="outline" className="w-full">
+            <Button asChild className="w-full">
+              <Link href="/admin/users">
+                Review Users
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Email Campaigns</CardTitle>
+            <CardDescription>
+              Send bulk emails to users
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
               <Link href="/admin/email">
-                Send Campaigns
+                Send Emails
               </Link>
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* System Status */}
+      {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>System Status</CardTitle>
+          <CardTitle>Recent Activity</CardTitle>
           <CardDescription>
-            Platform overview and recent activity
+            Latest platform activities and updates
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center space-x-4 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">Platform Status</p>
-                <p className="text-xs text-muted-foreground">All systems operational</p>
+                <p className="text-sm font-medium">New user registration: John Doe</p>
+                <p className="text-xs text-muted-foreground">1 hour ago</p>
               </div>
-              <Badge variant="default">Healthy</Badge>
+              <Badge variant="secondary">Pending</Badge>
             </div>
             
             <div className="flex items-center space-x-4 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">Recent Signups</p>
-                <p className="text-xs text-muted-foreground">3 new users this week</p>
+                <p className="text-sm font-medium">Job awarded: VBeam Perfecta Maintenance</p>
+                <p className="text-xs text-muted-foreground">2 hours ago</p>
               </div>
-              <Badge variant="secondary">New</Badge>
-            </div>
-
-            <div className="flex items-center space-x-4 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Pending Actions</p>
-                <p className="text-xs text-muted-foreground">5 jobs need review</p>
-              </div>
-              <Badge variant="secondary">Action Required</Badge>
+              <Badge variant="default">Completed</Badge>
             </div>
           </div>
         </CardContent>
@@ -678,7 +695,7 @@ function AdminDashboard({ profile, stats }: { profile: UserProfile | null, stats
   )
 }
 
-function DefaultDashboard({ profile, stats }: { profile: UserProfile | null, stats: any }) {
+function DefaultDashboard({ profile, stats, isDemoUser }: { profile: UserProfile | null, stats: any, isDemoUser: boolean }) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with Logo and Title */}
@@ -686,37 +703,107 @@ function DefaultDashboard({ profile, stats }: { profile: UserProfile | null, sta
         <div>
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, {profile?.full_name || 'User'}!
+            Welcome back, {profile?.full_name || 'User'}! Manage your account and activities.
+            {isDemoUser && <span className="ml-2 text-blue-600">(Demo Mode)</span>}
           </p>
         </div>
         <img src="/logo.avif" alt="MED Equipment Tech" className="h-8 w-auto" />
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Open Jobs</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.openJobs || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Available for bidding
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">My Bids</CardTitle>
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.myBids || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Active bids placed
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Awarded Jobs</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.awardedJobs || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Currently working
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Browse Jobs</CardTitle>
+            <CardDescription>
+              View available jobs and place bids
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/jobs">
+                View Jobs
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>My Bids</CardTitle>
+            <CardDescription>
+              Track your bid status and manage active bids
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/bids">
+                View My Bids
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Account Status</CardTitle>
+          <CardTitle>Recent Activity</CardTitle>
           <CardDescription>
-            Your current account information and status
+            Your latest platform interactions and updates
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Name:</span>
-              <span>{profile?.full_name || 'Not set'}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Location:</span>
-              <span>{profile?.base_city && profile?.base_state ? 
-                `${profile.base_city}, ${profile.base_state}` : 'Not set'}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Roles:</span>
-              <div className="flex space-x-2">
-                {profile?.role_tech && <Badge variant="default">Technician</Badge>}
-                {profile?.role_trainer && <Badge variant="default">Trainer</Badge>}
-                {!profile?.role_tech && !profile?.role_trainer && <Badge variant="secondary">MedSpa Practice</Badge>}
+            <div className="flex items-center space-x-4 p-3 bg-muted rounded-lg">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Account created successfully</p>
+                <p className="text-xs text-muted-foreground">Just now</p>
               </div>
+              <Badge variant="default">Completed</Badge>
             </div>
           </div>
         </CardContent>
