@@ -8,8 +8,8 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>
-  signIn: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, userData: any) => Promise<{ success: boolean; error: any }>
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error: any }>
   signInDemo: (role: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    return { error }
+    return { success: !error, error }
   }
 
   const signIn = async (email: string, password: string) => {
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password
     })
-    return { error }
+    return { success: !error, error }
   }
 
   const signInDemo = async (role: string) => {

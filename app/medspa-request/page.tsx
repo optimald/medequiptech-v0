@@ -160,7 +160,15 @@ export default function MedSpaRequestPage() {
     }
 
     try {
-      const result = await signUp(signUpForm.email, signUpForm.password, 'medspa')
+      const result = await signUp(signUpForm.email, signUpForm.password, {
+        full_name: signUpForm.full_name,
+        phone: signUpForm.phone,
+        role_tech: false,
+        role_trainer: false,
+        base_city: signUpForm.city,
+        base_state: signUpForm.state,
+        service_radius_mi: 50
+      })
       
       if (result.success) {
         setSuccess('Account created successfully! You can now submit your request.')
