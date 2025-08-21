@@ -152,8 +152,16 @@ export default function JobsPage() {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      if (jobTypeFilter && jobTypeFilter !== 'all') params.append('job_type', jobTypeFilter)
-      if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter)
+      
+      if (user) {
+        // Authenticated users - include all filters
+        if (jobTypeFilter && jobTypeFilter !== 'all') params.append('job_type', jobTypeFilter)
+        if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter)
+      } else {
+        // Public users - only show open jobs and filter by job type
+        params.append('status', 'OPEN')
+        if (jobTypeFilter && jobTypeFilter !== 'all') params.append('job_type', jobTypeFilter)
+      }
       
       const response = await fetch(`/api/jobs/public?${params.toString()}`)
       if (response.ok) {
@@ -195,29 +203,44 @@ export default function JobsPage() {
   }
 
   const filteredJobs = jobs.filter(job => {
-    // Search filtering
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.model.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    // Job type filtering
-    const matchesJobType = !jobTypeFilter || jobTypeFilter === 'all' || job.job_type === jobTypeFilter
-    
-    // Status filtering
-    const matchesStatus = !statusFilter || statusFilter === 'all' || job.status === statusFilter
-    
-    // Role-based filtering - ensure users only see jobs they can work on
-    const matchesRole = !userAccess.authenticated || 
-                       (userAccess.role_tech && job.job_type === 'tech') ||
-                       (userAccess.role_trainer && job.job_type === 'trainer') ||
-                       (userAccess.role_tech && userAccess.role_trainer) // Admin users can see all
-    
-    return matchesSearch && matchesJobType && matchesStatus && matchesRole
+    if (user) {
+      // Authenticated users - use existing filtering logic
+      // Search filtering
+      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           job.model.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      // Job type filtering
+      const matchesJobType = !jobTypeFilter || jobTypeFilter === 'all' || job.job_type === jobTypeFilter
+      
+      // Status filtering
+      const matchesStatus = !statusFilter || statusFilter === 'all' || job.status === statusFilter
+      
+      // Role-based filtering - ensure users only see jobs they can work on
+      const matchesRole = !userAccess.authenticated || 
+                         (userAccess.role_tech && job.job_type === 'tech') ||
+                         (userAccess.role_trainer && job.job_type === 'trainer') ||
+                         (userAccess.role_tech && userAccess.role_trainer) // Admin users can see all
+      
+      return matchesSearch && matchesJobType && matchesStatus && matchesRole
+    } else {
+      // Public users - location-based filtering only
+      // State filtering (searchTerm is used for state)
+      const matchesState = !searchTerm || job.shipping_state === searchTerm
+      
+      // Job type filtering
+      const matchesJobType = !jobTypeFilter || jobTypeFilter === 'all' || job.job_type === jobTypeFilter
+      
+      // Radius filtering (statusFilter is used for radius)
+      const matchesRadius = !statusFilter || statusFilter === 'all' || true // TODO: Implement actual radius calculation
+      
+      return matchesState && matchesJobType && matchesRadius
+    }
   })
 
-  // Show different content based on authentication status
+    // Show different content based on authentication status
   if (!user && !userAccess.authenticated) {
-  return (
+    return (
       <div className="min-h-screen bg-gray-50">
         {/* Header with Logo */}
         <div className="bg-white shadow-sm border-b border-gray-200">
@@ -231,171 +254,176 @@ export default function JobsPage() {
                   height={60}
                   className="h-12 w-auto"
                 />
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/auth/signin"
+              </div>
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/auth/signin"
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/auth/signup"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Sign Up
-              </Link>
+                >
+                  Sign Up
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
         </div>
 
         <div className="container mx-auto px-4 py-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Available Jobs</h1>
             <p className="text-muted-foreground">
-              Browse available equipment service jobs
+              Browse available equipment service jobs in your area
             </p>
           </div>
 
-        {/* Public Call-to-Action */}
-        <Card className="mb-6 bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <UserPlus className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-blue-900 mb-2">
-                Get Full Access to Job Details
-              </h3>
-              <p className="text-blue-700 mb-4">
-                Sign up to view company information, specific locations, and place bids on available jobs. 
-                Join our community of qualified technicians and trainers.
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Link href="/auth/signup">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    Sign Up Now
-                  </Button>
-                </Link>
-                <Link href="/auth/signin">
-                  <Button variant="outline">
-                    Sign In
-                  </Button>
-                </Link>
+          {/* Public Call-to-Action */}
+          <Card className="mb-6 bg-blue-50 border-blue-200">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <UserPlus className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-blue-900 mb-2">
+                  Get Full Access to Job Details
+                </h3>
+                <p className="text-blue-700 mb-4">
+                  Sign up to view company information, specific locations, and place bids on available jobs. 
+                  Join our community of qualified technicians and trainers.
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <Link href="/auth/signup">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      Sign Up Now
+                    </Button>
+                  </Link>
+                  <Link href="/auth/signin">
+                    <Button variant="outline">
+                      Sign In
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                <Input
-                  placeholder="Search jobs..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                  />
-                </div>
-                <div>
-                <Select value={jobTypeFilter} onValueChange={handleJobTypeChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="tech">Technician</SelectItem>
-                    <SelectItem value="trainer">Trainer</SelectItem>
-                  </SelectContent>
-                </Select>
-                </div>
-              <div>
-                <Select value={statusFilter} onValueChange={handleStatusChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="OPEN">Open</SelectItem>
-                    <SelectItem value="BIDDING">Bidding</SelectItem>
-                    <SelectItem value="AWARDED">Awarded</SelectItem>
-                  </SelectContent>
-                </Select>
-                </div>
-              <div>
-                <Button onClick={fetchJobs} variant="outline" className="w-full">
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Jobs List - Public View */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        ) : filteredJobs.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <p className="text-muted-foreground">No jobs found matching your criteria.</p>
             </CardContent>
           </Card>
-        ) : (
-          <div className="space-y-4">
-            {filteredJobs.map((job) => (
-              <Card key={job.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-semibold">{job.title}</h3>
-                        <div className="flex gap-2">
-                          <Badge className={getPriorityColor(job.priority)}>
-                            {job.priority}
-                          </Badge>
-                          <Badge className={getStatusColor(job.status)}>
-                            {job.status}
-                          </Badge>
-                    </div>
-                  </div>
-                  
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Building2 className="h-4 w-4 mr-2" />
-                            {job.model}
-                          </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            {job.shipping_city}, {job.shipping_state}
-                          </div>
-                        </div>
-                      </div>
-                  </div>
-                  
-                    <div className="flex flex-col gap-2">
-                      <Link href="/auth/signup">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Sign Up for Full Details
-                        </Button>
-                      </Link>
-                      <p className="text-xs text-muted-foreground text-center">
-                        Create an account to view company details and place bids
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-              </div>
-            )}
+
+          {/* Location-based Filters for Public Users */}
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                  <Select value={searchTerm} onValueChange={(value) => setSearchTerm(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select State" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All States</SelectItem>
+                      <SelectItem value="CA">California</SelectItem>
+                      <SelectItem value="NV">Nevada</SelectItem>
+                      <SelectItem value="UT">Utah</SelectItem>
+                      <SelectItem value="AZ">Arizona</SelectItem>
+                      <SelectItem value="CO">Colorado</SelectItem>
+                      <SelectItem value="TX">Texas</SelectItem>
+                      <SelectItem value="FL">Florida</SelectItem>
+                      <SelectItem value="NY">New York</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
+                  <Select value={jobTypeFilter} onValueChange={handleJobTypeChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="tech">Equipment Service</SelectItem>
+                      <SelectItem value="trainer">Training</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Radius (miles)</label>
+                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="50 miles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="25">25 miles</SelectItem>
+                      <SelectItem value="50">50 miles</SelectItem>
+                      <SelectItem value="100">100 miles</SelectItem>
+                      <SelectItem value="200">200 miles</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Jobs List - Public View (Optimized Cards) */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-muted-foreground">No jobs found in your selected area.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredJobs.map((job) => (
+                <Card key={job.id} className="hover:shadow-md transition-shadow h-full">
+                  <CardContent className="p-4">
+                    <div className="h-full flex flex-col">
+                      {/* Job Header */}
+                      <div className="mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
+                          {job.title}
+                        </h3>
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <Building2 className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span className="truncate">{job.model}</span>
+                        </div>
+                      </div>
+
+                      {/* Location Info */}
+                      <div className="flex items-center text-sm text-gray-600 mb-4">
+                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{job.shipping_city}, {job.shipping_state}</span>
+                      </div>
+
+                      {/* Priority Badge */}
+                      <div className="mb-4">
+                        <Badge className={`${getPriorityColor(job.priority)} text-xs`}>
+                          {job.priority}
+                        </Badge>
+                      </div>
+
+                      {/* Call to Action */}
+                      <div className="mt-auto">
+                        <Link href="/auth/signup" className="block">
+                          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-sm py-2">
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Sign Up for Details
+                          </Button>
+                        </Link>
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                          Create account to view company details & bid
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     )
   }
 
