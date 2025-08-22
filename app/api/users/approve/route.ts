@@ -125,8 +125,35 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // TODO: Send welcome email to approved user
-      // TODO: Send notification to admin
+          // Send welcome email to approved user
+    try {
+      // Import email service dynamically to avoid issues in API routes
+      const { emailService } = await import('@/lib/email-service')
+      
+      // Get user email from auth.users
+      const { data: userAuth } = await supabase.auth.admin.getUserById(userId)
+      
+      if (userAuth?.user?.email) {
+        // Send welcome email
+        const result = await emailService.sendWelcomeApproved(
+          userAuth.user.email,
+          {
+            full_name: profile.full_name,
+            role_tech: profile.role_tech,
+            role_trainer: profile.role_trainer
+          }
+        )
+        
+        if (result.success) {
+          console.log('Welcome email sent successfully')
+        } else {
+          console.error('Failed to send welcome email:', result.error)
+        }
+      }
+    } catch (emailError) {
+      console.error('Error sending welcome email:', emailError)
+      // Don't fail the approval if email fails
+    }
 
       return NextResponse.json({ message: 'User approved successfully' })
 

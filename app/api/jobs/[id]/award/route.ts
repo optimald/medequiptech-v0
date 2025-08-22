@@ -174,9 +174,47 @@ export async function POST(
       // Don't fail the award if bid rejection fails
     }
 
-    // TODO: Send notification to awarded user
-    // TODO: Send notification to rejected bidders
-    // TODO: Send email notifications
+    // Send notification to awarded user
+    try {
+      // Import email service dynamically to avoid issues in API routes
+      const { emailService } = await import('@/lib/email-service')
+      
+      // Get awarded user email from auth.users
+      const { data: awardedUserAuth } = await supabase.auth.admin.getUserById(awarded_user_id)
+      
+      if (awardedUserAuth?.user?.email) {
+        // Get job details for email
+        const { data: jobDetails } = await supabase
+          .from('jobs')
+          .select('title, company_name, shipping_city, shipping_state, met_date')
+          .eq('id', jobId)
+          .single()
+        
+        if (jobDetails) {
+          // Send job awarded email
+          const result = await emailService.sendJobAwarded(
+            awardedUserAuth.user.email,
+            awardedUser.full_name || 'User',
+            {
+              title: jobDetails.title,
+              company_name: jobDetails.company_name,
+              shipping_city: jobDetails.shipping_city,
+              shipping_state: jobDetails.shipping_state,
+              met_date: jobDetails.met_date
+            }
+          )
+          
+          if (result.success) {
+            console.log('Job awarded email sent successfully')
+          } else {
+            console.error('Failed to send job awarded email:', result.error)
+          }
+        }
+      }
+    } catch (emailError) {
+      console.error('Error sending job awarded email:', emailError)
+      // Don't fail the award if email fails
+    }
 
     return NextResponse.json({
       message: 'Job awarded successfully',

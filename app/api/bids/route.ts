@@ -147,8 +147,41 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // TODO: Send notification to admin about new bid
-    // TODO: Send email notification
+    // Send notification to admin about new bid
+    try {
+      // Import email service dynamically to avoid issues in API routes
+      const { emailService } = await import('@/lib/email-service')
+      
+      // Get admin emails from environment or use a default
+      const adminEmails = process.env.ADMIN_ALERT_EMAILS?.split(',') || ['admin@medequiptech.com']
+      
+      // Get bidder profile info
+      const { data: bidderProfile } = await supabase
+        .from('profiles')
+        .select('full_name, base_city, base_state')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (bidderProfile) {
+        // Send bid alert email
+        const result = await emailService.sendBidAlert({
+          job_title: job.title || 'Unknown Job',
+          bidder_name: bidderProfile.full_name || 'Unknown Bidder',
+          bidder_location: `${bidderProfile.base_city || 'Unknown'}, ${bidderProfile.base_state || 'Unknown'}`,
+          ask_price,
+          job_id: job_id
+        }, adminEmails)
+        
+        if (result.success) {
+          console.log('Bid alert email sent successfully')
+        } else {
+          console.error('Failed to send bid alert email:', result.error)
+        }
+      }
+    } catch (emailError) {
+      console.error('Error sending bid alert email:', emailError)
+      // Don't fail the bid creation if email fails
+    }
 
     return NextResponse.json({
       message: 'Bid placed successfully',

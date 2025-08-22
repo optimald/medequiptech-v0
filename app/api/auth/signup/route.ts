@@ -128,7 +128,22 @@ async function sendAdminSignupAlert(userData: {
   base_city?: string
   base_state?: string
 }) {
-  // TODO: Implement Resend email sending
-  // For now, just log the alert
-  console.log('ADMIN ALERT - New signup:', userData)
+  try {
+    // Import email service dynamically to avoid issues in API routes
+    const { emailService } = await import('@/lib/email-service')
+    
+    // Get admin emails from environment or use a default
+    const adminEmails = process.env.ADMIN_ALERT_EMAILS?.split(',') || ['admin@medequiptech.com']
+    
+    // Send admin alert email
+    const result = await emailService.sendSignupAlert(userData, adminEmails)
+    
+    if (result.success) {
+      console.log('Admin signup alert email sent successfully')
+    } else {
+      console.error('Failed to send admin signup alert email:', result.error)
+    }
+  } catch (error) {
+    console.error('Error sending admin signup alert email:', error)
+  }
 }
