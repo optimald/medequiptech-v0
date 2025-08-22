@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ users: pendingUsers || [] })
+    return NextResponse.json({ pending_users: pendingUsers || [] })
 
   } catch (error) {
     console.error('Error fetching pending users:', error)
@@ -125,35 +125,44 @@ export async function POST(request: NextRequest) {
         )
       }
 
-          // Send welcome email to approved user
-    try {
-      // Import email service dynamically to avoid issues in API routes
-      const { emailService } = await import('@/lib/email-service')
-      
-      // Get user email from auth.users
-      const { data: userAuth } = await supabase.auth.admin.getUserById(userId)
-      
-      if (userAuth?.user?.email) {
-        // Send welcome email
-        const result = await emailService.sendWelcomeApproved(
-          userAuth.user.email,
-          {
-            full_name: profile.full_name,
-            role_tech: profile.role_tech,
-            role_trainer: profile.role_trainer
-          }
-        )
+      // Send welcome email to approved user
+      try {
+        // Import email service dynamically to avoid issues in API routes
+        const { emailService } = await import('@/lib/email-service')
         
-        if (result.success) {
-          console.log('Welcome email sent successfully')
-        } else {
-          console.error('Failed to send welcome email:', result.error)
+        // Get user email from auth.users
+        const { data: userAuth } = await supabase.auth.admin.getUserById(user_id)
+        
+        if (userAuth?.user?.email) {
+          // Get user profile for email data
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('full_name, role_tech, role_trainer')
+            .eq('user_id', user_id)
+            .single()
+          
+          if (userProfile) {
+            // Send welcome email
+            const result = await emailService.sendWelcomeApproved(
+              userAuth.user.email,
+              {
+                full_name: userProfile.full_name,
+                role_tech: userProfile.role_tech,
+                role_trainer: userProfile.role_trainer
+              }
+            )
+            
+            if (result.success) {
+              console.log('Welcome email sent successfully')
+            } else {
+              console.error('Failed to send welcome email:', result.error)
+            }
+          }
         }
+      } catch (emailError) {
+        console.error('Error sending welcome email:', emailError)
+        // Don't fail the approval if email fails
       }
-    } catch (emailError) {
-      console.error('Error sending welcome email:', emailError)
-      // Don't fail the approval if email fails
-    }
 
       return NextResponse.json({ message: 'User approved successfully' })
 
