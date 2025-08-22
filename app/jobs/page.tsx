@@ -83,6 +83,36 @@ export default function JobsPage() {
     updateURL(jobTypeFilter, value)
   }
 
+  // Handle getting current location
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          // For now, we'll just show coordinates
+          // In a real app, you'd reverse geocode this to get city/state
+          setSearchTerm(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+        },
+        (error) => {
+          console.error('Error getting location:', error)
+          // Fallback to a default location
+          setSearchTerm('Las Vegas, NV')
+        }
+      )
+    } else {
+      // Fallback for browsers that don't support geolocation
+      setSearchTerm('Las Vegas, NV')
+    }
+  }
+
+  // Handle resetting all filters
+  const handleResetFilters = () => {
+    setSearchTerm('')
+    setJobTypeFilter('all')
+    setStatusFilter('all')
+    updateURL('all', 'all')
+  }
+
   useEffect(() => {
     // Initialize filters from URL parameters
     const urlJobType = searchParams.get('job_type')
@@ -226,7 +256,7 @@ export default function JobsPage() {
     } else {
       // Public users - location-based filtering only
       // State filtering (searchTerm is used for state)
-      const matchesState = !searchTerm || job.shipping_state === searchTerm
+      const matchesState = !searchTerm || searchTerm === 'all' || job.shipping_state === searchTerm
       
       // Job type filtering
       const matchesJobType = !jobTypeFilter || jobTypeFilter === 'all' || job.job_type === jobTypeFilter
@@ -312,52 +342,89 @@ export default function JobsPage() {
           {/* Location-based Filters for Public Users */}
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-4">
+                {/* Address Input with Geolocation */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                  <Select value={searchTerm} onValueChange={(value) => setSearchTerm(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select State" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All States</SelectItem>
-                      <SelectItem value="CA">California</SelectItem>
-                      <SelectItem value="NV">Nevada</SelectItem>
-                      <SelectItem value="UT">Utah</SelectItem>
-                      <SelectItem value="AZ">Arizona</SelectItem>
-                      <SelectItem value="CO">Colorado</SelectItem>
-                      <SelectItem value="TX">Texas</SelectItem>
-                      <SelectItem value="FL">Florida</SelectItem>
-                      <SelectItem value="NY">New York</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Location (City, State)
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter city and state (e.g., Las Vegas, NV)"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleGetCurrentLocation}
+                      variant="outline"
+                      size="sm"
+                      className="whitespace-nowrap"
+                    >
+                      <MapPin className="w-4 h-4 mr-2" />
+                      Use My Location
+                    </Button>
+                  </div>
+                  {/* Popular Cities Quick Select */}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {[
+                      'Las Vegas, NV', 'Los Angeles, CA', 'Phoenix, AZ', 
+                      'Salt Lake City, UT', 'Denver, CO', 'Dallas, TX',
+                      'Miami, FL', 'New York, NY', 'Chicago, IL'
+                    ].map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => setSearchTerm(city)}
+                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                          searchTerm === city
+                            ? 'bg-blue-100 border-blue-300 text-blue-700'
+                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
-                  <Select value={jobTypeFilter} onValueChange={handleJobTypeChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="tech">Equipment Service</SelectItem>
-                      <SelectItem value="trainer">Training</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Radius (miles)</label>
-                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="50 miles" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="25">25 miles</SelectItem>
-                      <SelectItem value="50">50 miles</SelectItem>
-                      <SelectItem value="100">100 miles</SelectItem>
-                      <SelectItem value="200">200 miles</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+                {/* Job Type and Radius */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
+                    <Select value={jobTypeFilter} onValueChange={handleJobTypeChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="tech">Equipment Service</SelectItem>
+                        <SelectItem value="trainer">Training</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Radius (miles)</label>
+                    <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="50 miles" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="25">25 miles</SelectItem>
+                        <SelectItem value="50">50 miles</SelectItem>
+                        <SelectItem value="100">100 miles</SelectItem>
+                        <SelectItem value="200">200 miles</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      onClick={handleResetFilters}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -397,12 +464,7 @@ export default function JobsPage() {
                         <span>{job.shipping_city}, {job.shipping_state}</span>
                       </div>
 
-                      {/* Priority Badge */}
-                      <div className="mb-4">
-                        <Badge className={`${getPriorityColor(job.priority)} text-xs`}>
-                          {job.priority}
-                        </Badge>
-                      </div>
+
 
                       {/* Call to Action */}
                       <div className="mt-auto">
