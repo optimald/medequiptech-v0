@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import Footer from '@/components/Footer'
 
 export default function TechniciansPage() {
   const { user } = useAuth()
@@ -72,14 +73,14 @@ export default function TechniciansPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/signup">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                <button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
                   Join Our Network
-                </Button>
+                </button>
               </Link>
               <Link href="/jobs?job_type=tech">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                <button className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
                   View Available Jobs
-                </Button>
+                </button>
               </Link>
             </div>
           </div>
@@ -301,46 +302,7 @@ export default function TechniciansPage() {
       </div>
 
       {/* Footer */}
-      <div className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <Phone className="w-4 h-4 mr-2" />
-                  <span>(435) 731-8232</span>
-                </div>
-                <div className="flex items-center">
-                  <Mail className="w-4 h-4 mr-2" />
-                  <span>support@medequiptech.com</span>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <div className="space-y-2">
-                <Link href="/jobs?job_type=tech" className="block text-gray-300 hover:text-white">
-                  View Tech Jobs
-                </Link>
-                <Link href="/auth/signup" className="block text-gray-300 hover:text-white">
-                  Sign Up
-                </Link>
-                <Link href="/auth/signin" className="block text-gray-300 hover:text-white">
-                  Sign In
-                </Link>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">About</h3>
-              <p className="text-gray-300">
-                Connecting qualified technicians with MedSpa practices nationwide 
-                for quick equipment repair and maintenance.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Footer />
     </div>
   )
 }

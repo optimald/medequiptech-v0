@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { emailService } from '@/lib/email-service'
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic'
@@ -57,7 +58,6 @@ export async function POST(request: NextRequest) {
       .select(`
         user_id,
         full_name,
-        email:auth.users!inner(email),
         role_tech,
         role_trainer,
         base_city,
@@ -98,6 +98,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get emails for recipients from auth.users
+    let recipientsWithEmails: any[] = []
+    if (recipients && recipients.length > 0) {
+      const userIds = recipients.map(r => r.user_id)
+      const { data: usersData, error: usersError } = await supabase.auth.admin.listUsers()
+      
+      if (usersError) {
+        console.error('Error fetching user emails:', usersError)
+        return NextResponse.json(
+          { error: 'Failed to fetch user emails' },
+          { status: 500 }
+        )
+      }
+
+      // Combine profile data with email data
+      recipientsWithEmails = recipients.map(profile => {
+        const user = usersData.users.find(u => u.id === profile.user_id)
+        return {
+          ...profile,
+          email: user?.email || ''
+        }
+      }).filter(r => r.email) // Only include recipients with valid emails
+    }
+
     // Get job details if job_ids provided
     let jobs: any[] = []
     if (job_ids && job_ids.length > 0) {
@@ -132,12 +156,12 @@ export async function POST(request: NextRequest) {
 
     // Prepare email data
     const emailData = {
-      recipients: recipients || [],
+      recipients: recipientsWithEmails || [],
       jobs,
       segment: segment_json,
       template: template_key,
       subject,
-      total_recipients: recipients?.length || 0,
+      total_recipients: recipientsWithEmails?.length || 0,
       total_jobs: jobs.length
     }
 
@@ -148,9 +172,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // TODO: Implement actual email sending via Resend
-    // For now, just log the campaign
-    console.log('BULK EMAIL CAMPAIGN:', emailData)
+    // Send emails via Resend
+// For now, just log the campaign
+console.log('BULK EMAIL CAMPAIGN:', emailData)
 
     // Store campaign record
     const { data: campaign, error: campaignError } = await supabase
@@ -172,12 +196,38 @@ export async function POST(request: NextRequest) {
       // Don't fail the email send for this
     }
 
-    // TODO: Send emails via Resend
-    // This would involve:
-    // 1. Looping through recipients
-    // 2. Personalizing template for each recipient
-    // 3. Sending via Resend API
-    // 4. Tracking delivery status
+    // Send emails via Resend
+    if (!preview_only && recipientsWithEmails && recipientsWithEmails.length > 0) {
+      try {
+        // Prepare campaign data for email template
+        const campaignData = {
+          title: template_key === 'new_jobs' ? 'New Jobs Available' : 'MedEquipTech Update',
+          subject: subject,
+          content: `We have ${emailData.total_jobs} new ${template_key === 'new_jobs' ? 'jobs' : 'opportunities'} available that match your profile.`,
+          cta_text: 'View Available Jobs',
+          cta_link: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/jobs`
+        }
+
+        // Send bulk emails
+        const emailResult = await emailService.sendBulkCampaign(
+          recipientsWithEmails.map(r => ({ 
+            email: r.email, 
+            name: r.full_name 
+          })),
+          campaignData
+        )
+
+        if (emailResult.success) {
+          console.log(`Bulk email campaign sent successfully: ${emailResult.sent} emails sent`)
+        } else {
+          console.error(`Bulk email campaign partially failed: ${emailResult.failed} failed, ${emailResult.sent} sent`)
+          console.error('Email errors:', emailResult.errors)
+        }
+      } catch (emailError) {
+        console.error('Error sending bulk emails:', emailError)
+        // Don't fail the entire request if email sending fails
+      }
+    }
 
     return NextResponse.json({
       message: 'Bulk email campaign initiated',

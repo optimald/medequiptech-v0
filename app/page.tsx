@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/lib/auth-context'
+import Footer from '@/components/Footer'
 
 export default function Home() {
   const { user } = useAuth()
@@ -266,6 +267,9 @@ export default function Home() {
           </div>
         </div>
       </main>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }
