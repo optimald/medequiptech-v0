@@ -39,16 +39,18 @@ export async function GET(request: NextRequest) {
 
     if (profile.role_admin) {
       // Admin stats
-      const [openJobsResult, totalUsersResult, pendingApprovalsResult] = await Promise.all([
+      const [openJobsResult, totalUsersResult, pendingApprovalsResult, activeBidsResult] = await Promise.all([
         supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('status', 'OPEN'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_approved', false)
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_approved', false),
+        supabase.from('bids').select('id', { count: 'exact', head: true }).eq('status', 'submitted')
       ])
 
       stats = {
         openJobs: openJobsResult.count || 0,
         totalUsers: totalUsersResult.count || 0,
-        pendingApprovals: pendingApprovalsResult.count || 0
+        pendingApprovals: pendingApprovalsResult.count || 0,
+        myBids: activeBidsResult.count || 0  // For admin, this represents total active bids
       }
     } else if (profile.role_tech || profile.role_trainer) {
       // Tech/Trainer stats
