@@ -112,8 +112,48 @@ export async function PATCH(
       }
     }
 
-    // TODO: Send notification to admin about bid withdrawal
-    // TODO: Send email notification
+    // Send notification to admin about bid withdrawal
+    try {
+      // Import email service dynamically to avoid issues in API routes
+      const { emailService } = await import('@/lib/email-service')
+      
+      // Get admin emails from environment or use a default
+      const adminEmails = process.env.ADMIN_ALERT_EMAILS?.split(',') || ['admin@medequiptech.com']
+      
+      // Get bidder profile info
+      const { data: bidderProfile } = await supabase
+        .from('profiles')
+        .select('full_name, base_city, base_state')
+        .eq('user_id', user.id)
+        .single()
+      
+      // Get job details
+      const { data: jobDetails } = await supabase
+        .from('jobs')
+        .select('title')
+        .eq('id', bid.job_id)
+        .single()
+      
+      if (bidderProfile && jobDetails) {
+        // Send bid withdrawal alert email
+        const result = await emailService.sendBidAlert({
+          job_title: jobDetails.title || 'Unknown Job',
+          bidder_name: bidderProfile.full_name || 'Unknown Bidder',
+          bidder_location: `${bidderProfile.base_city || 'Unknown'}, ${bidderProfile.base_state || 'Unknown'}`,
+          ask_price: bid.ask_price,
+          job_id: bid.job_id
+        }, adminEmails)
+        
+        if (result.success) {
+          console.log('Bid withdrawal alert email sent successfully')
+        } else {
+          console.error('Failed to send bid withdrawal alert email:', result.error)
+        }
+      }
+    } catch (emailError) {
+      console.error('Error sending bid withdrawal alert email:', emailError)
+      // Don't fail the bid withdrawal if email fails
+    }
 
     return NextResponse.json({
       message: 'Bid withdrawn successfully',
