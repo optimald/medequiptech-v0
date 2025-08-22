@@ -82,7 +82,7 @@ export async function POST(
     // Verify the awarded user exists and is approved
     const { data: awardedUser, error: userError } = await supabase
       .from('profiles')
-      .select('id, is_approved, role_tech, role_trainer')
+      .select('id, is_approved, role_tech, role_trainer, full_name')
       .eq('user_id', awarded_user_id)
       .eq('is_approved', true)
       .single()

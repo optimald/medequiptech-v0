@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Get job details to check if user can bid on this job type
     const { data: job, error: jobError } = await supabase
       .from('jobs')
-      .select('job_type, status')
+      .select('job_type, status, title')
       .eq('id', job_id)
       .single()
 

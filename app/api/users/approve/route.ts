@@ -46,8 +46,7 @@ export async function GET(request: NextRequest) {
         base_city,
         base_state,
         service_radius_mi,
-        created_at,
-        auth.users!inner(email)
+        created_at
       `)
       .eq('is_approved', false)
       .order('created_at', { ascending: false })
@@ -60,7 +59,40 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ pending_users: pendingUsers || [] })
+    // Get emails for pending users from auth.users
+    let pendingUsersWithEmails: any[] = []
+    if (pendingUsers && pendingUsers.length > 0) {
+      try {
+        const { data: usersData, error: usersError } = await supabase.auth.admin.listUsers()
+        
+        if (usersError) {
+          console.error('Error fetching user emails:', usersError)
+          // Return users without emails rather than failing completely
+          pendingUsersWithEmails = pendingUsers.map(profile => ({
+            ...profile,
+            email: 'Email unavailable'
+          }))
+        } else {
+          // Combine profile data with email data
+          pendingUsersWithEmails = pendingUsers.map(profile => {
+            const user = usersData.users.find(u => u.id === profile.user_id)
+            return {
+              ...profile,
+              email: user?.email || 'Email unavailable'
+            }
+          })
+        }
+      } catch (emailError) {
+        console.error('Error processing user emails:', emailError)
+        // Return users without emails rather than failing completely
+        pendingUsersWithEmails = pendingUsers.map(profile => ({
+          ...profile,
+          email: 'Email unavailable'
+        }))
+      }
+    }
+
+    return NextResponse.json({ pending_users: pendingUsersWithEmails || [] })
 
   } catch (error) {
     console.error('Error fetching pending users:', error)

@@ -98,8 +98,8 @@ export async function POST(request: NextRequest) {
         email,
         role_tech,
         role_trainer,
-        base_city,
-        base_state
+        base_city: base_city || 'Not specified',
+        base_state: base_state || 'Not specified'
       })
     } catch (emailError) {
       console.error('Failed to send admin alert email:', emailError)
@@ -125,8 +125,8 @@ async function sendAdminSignupAlert(userData: {
   email: string
   role_tech: boolean
   role_trainer: boolean
-  base_city?: string
-  base_state?: string
+  base_city: string
+  base_state: string
 }) {
   try {
     // Import email service dynamically to avoid issues in API routes
