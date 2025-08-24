@@ -154,44 +154,44 @@ const useCases = [
         name: "Sales & Case Creation",
         color: "from-blue-500 to-cyan-400",
         steps: [
-          "Sales Rep closes trade-in",
-          "Sales Cloud: Close/Won",
-          "Auto-create Service Case"
+          "Sales Rep closes trade-in (Sales Cloud)",
+          "Sales Cloud: Close/Won (Sales Cloud)",
+          "Auto-create Service Case (Service Cloud)"
         ]
       },
       {
         name: "Job Creation & Bidding",
         color: "from-indigo-500 to-blue-400",
         steps: [
-          "Case Router → MET Job",
-          "External drivers bid",
-          "Ops selects winner"
+          "Case Router → MET Job (Service Cloud)",
+          "External drivers bid (MET)",
+          "Ops selects winner (MET)"
         ]
       },
       {
         name: "Pickup & Intake",
         color: "from-amber-500 to-orange-400",
         steps: [
-          "Driver pickup on-site",
-          "Scan serials → IMS",
-          "Depot intake → Jira"
+          "Driver pickup on-site (MET)",
+          "Scan serials → IMS (MET)",
+          "Depot intake → Jira (Jira)"
         ]
       },
       {
         name: "Refurb Process",
         color: "from-emerald-500 to-green-400",
         steps: [
-          "Diagnostic → Repair → QA → Pack",
-          "Parts via Warehouse/SAP"
+          "Diagnostic → Repair → QA → Pack (Jira)",
+          "Parts via Warehouse/SAP (Warehouse/SAP)"
         ]
       },
       {
         name: "Completion",
         color: "from-purple-500 to-pink-400",
         steps: [
-          "Inventory ready for resale",
-          "Close Case + Survey",
-          "SAP cost reconciliation"
+          "Inventory ready for resale (IMS)",
+          "Close Case + Survey (Service Cloud)",
+          "SAP cost reconciliation (SAP)"
         ]
       }
     ],
@@ -218,44 +218,44 @@ const useCases = [
         name: "Sales & Case Creation",
         color: "from-blue-500 to-cyan-400",
         steps: [
-          "Web purchase from mrp.io",
-          "Sales Order created",
-          "Service Case auto-generated"
+          "Web purchase from mrp.io (mrp.io)",
+          "Sales Order created (mrp.io)",
+          "Service Case auto-generated (Service Cloud)"
         ]
       },
       {
         name: "Depot Preparation",
         color: "from-indigo-500 to-blue-400",
         steps: [
-          "Jira prep/QA process",
-          "Parts via Warehouse/SAP",
-          "Device ready for delivery"
+          "Jira prep/QA process (Jira)",
+          "Parts via Warehouse/SAP (Warehouse/SAP)",
+          "Device ready for delivery (Jira)"
         ]
       },
       {
         name: "Job Creation & Bidding",
         color: "from-amber-500 to-orange-400",
         steps: [
-          "MET jobs: Delivery + Training",
-          "External providers bid",
-          "Ops selects winners"
+          "MET jobs: Delivery + Training (MET)",
+          "External providers bid (MET)",
+          "Ops selects winners (MET)"
         ]
       },
       {
         name: "Execution",
         color: "from-emerald-500 to-green-400",
         steps: [
-          "Delivery scan → IMS owner set",
-          "Training executed on-site"
+          "Delivery scan → IMS owner set (MET)",
+          "Training executed on-site (MET)"
         ]
       },
       {
         name: "Completion",
         color: "from-purple-500 to-pink-400",
         steps: [
-          "Artifacts synced to Case",
-          "Survey sent",
-          "SAP billing completed"
+          "Artifacts synced to Case (MET)",
+          "Survey sent (Service Cloud)",
+          "SAP billing completed (SAP)"
         ]
       }
     ],
@@ -278,45 +278,45 @@ const useCases = [
         name: "Initial Response",
         color: "from-blue-500 to-cyan-400",
         steps: [
-          "Clinic reports device failure",
-          "CSR opens Service Case",
-          "Entitlement check + SLA start"
+          "Clinic reports device failure (Clinic)",
+          "CSR opens Service Case (Service Cloud)",
+          "Entitlement check + SLA start (Service Cloud)"
         ]
       },
       {
         name: "Job Creation & Bidding",
         color: "from-indigo-500 to-blue-400",
         steps: [
-          "Case Router → MET Job",
-          "External techs bid",
-          "Ops selects winner"
+          "Case Router → MET Job (Service Cloud)",
+          "External techs bid (MET)",
+          "Ops selects winner (MET)"
         ]
       },
       {
         name: "Parts Planning",
         color: "from-amber-500 to-orange-400",
         steps: [
-          "Pre-visit parts planning",
-          "Parts Prediction Engine",
-          "Parts Orchestrator reserve"
+          "Pre-visit parts planning (MET)",
+          "Parts Prediction Engine (Parts Engine)",
+          "Parts Orchestrator reserve (Parts Orchestrator)"
         ]
       },
       {
         name: "Execution",
         color: "from-emerald-500 to-green-400",
         steps: [
-          "Tech arrives with parts",
-          "On-site repair checklist",
-          "Parts consume/return scan"
+          "Tech arrives with parts (MET)",
+          "On-site repair checklist (MET)",
+          "Parts consume/return scan (MET)"
         ]
       },
       {
         name: "Completion",
         color: "from-purple-500 to-pink-400",
         steps: [
-          "Sync to Service Case",
-          "Close Case + Survey",
-          "SAP cost reconciliation"
+          "Sync to Service Case (MET)",
+          "Close Case + Survey (Service Cloud)",
+          "SAP cost reconciliation (SAP)"
         ]
       }
     ],
@@ -339,36 +339,36 @@ const useCases = [
         name: "Sales & Case Creation",
         color: "from-blue-500 to-cyan-400",
         steps: [
-          "Sales: Close/Won → Service Case",
-          "Jira prep/QA; Parts via Warehouse/SAP",
-          "IMS updated with device info"
+          "Sales: Close/Won → Service Case (Sales Cloud)",
+          "Jira prep/QA; Parts via Warehouse/SAP (Jira)",
+          "IMS updated with device info (IMS)"
         ]
       },
       {
         name: "Job Creation & Bidding",
         color: "from-indigo-500 to-blue-400",
         steps: [
-          "MET jobs: Electrical + Delivery + Training",
-          "External providers bid on jobs",
-          "Ops selects winners for each job"
+          "MET jobs: Electrical + Delivery + Training (MET)",
+          "External providers bid on jobs (MET)",
+          "Ops selects winners for each job (MET)"
         ]
       },
       {
         name: "Sequential Execution",
         color: "from-amber-500 to-orange-400",
         steps: [
-          "Electrical: Install outlet/prep location",
-          "Delivery: Driver delivers device on-site",
-          "Training: Trainer executes training"
+          "Electrical: Install outlet/prep location (MET)",
+          "Delivery: Driver delivers device on-site (MET)",
+          "Training: Trainer executes training (MET)"
         ]
       },
       {
         name: "Completion",
         color: "from-emerald-500 to-green-400",
         steps: [
-          "All artifacts synced to Case",
-          "Close Case + Survey",
-          "SAP billing completed"
+          "All artifacts synced to Case (MET)",
+          "Close Case + Survey (Service Cloud)",
+          "SAP billing completed (SAP)"
         ]
       }
     ],
@@ -733,35 +733,35 @@ const useCases = [
         color: "from-blue-500 to-cyan-400",
         steps: [
           "Applicant applies in MET platform",
-          "KYC verification process",
-          "Banking information collection"
+          "KYC verification process (MET)",
+          "Banking information collection (MET)"
         ]
       },
       {
         name: "Review & Approval",
         color: "from-indigo-500 to-blue-400",
         steps: [
-          "Ops Admin reviews application",
-          "Compliance checks completed",
-          "SAP vendor record created"
+          "Ops Admin reviews application (MET)",
+          "Compliance checks completed (MET)",
+          "SAP vendor record created (SAP)"
         ]
       },
       {
         name: "Training & Activation",
         color: "from-amber-500 to-orange-400",
         steps: [
-          "Training modules assigned",
-          "Provider completes training",
-          "Account activation"
+          "Training modules assigned (MET)",
+          "Provider completes training (MET)",
+          "Account activation (MET)"
         ]
       },
       {
         name: "Marketplace Integration",
         color: "from-emerald-500 to-green-400",
         steps: [
-          "Provider profile created",
-          "Provider live in marketplace",
-          "Ready to receive job bids"
+          "Provider profile created (MET)",
+          "Provider live in marketplace (MET)",
+          "Ready to receive job bids (MET)"
         ]
       }
     ],
@@ -978,7 +978,7 @@ export default function ConceptPage() {
         return (
           <div className="slide usecase-slide">
             <h1>{useCase.code} — {useCase.title}</h1>
-            <h3 className="slide-subtitle">Case Setup</h3>
+            <h3 className="slide-subtitle">Case Setup: Actors & Initial Configuration</h3>
             <div className="slide-content">
               <div className="actors-section">
                 <h4>Actors:</h4>
@@ -987,31 +987,31 @@ export default function ConceptPage() {
             </div>
           </div>
         );
-             } else if (useCaseSlideType === 1) {
-         return (
-           <div className="slide usecase-slide">
-             <h1>{useCase.code} — Process Flow</h1>
-             <h3 className="slide-subtitle">Intake → Routing → Execution → Closeout</h3>
-             <div className="slide-content">
-               {useCase.swimlaneData ? (
-                 <div className="process-flow-diagram">
-                   <SwimlaneFlow lanes={useCase.swimlaneData} />
-                 </div>
-               ) : (
-                 <ol>
-                   {useCase.steps.map((step, index) => (
-                     <li key={index}>{step}</li>
-                   ))}
-                 </ol>
-               )}
-             </div>
-           </div>
-         );
-       } else if (useCaseSlideType === 2) {
+                   } else if (useCaseSlideType === 1) {
         return (
           <div className="slide usecase-slide">
-            <h1>{useCase.code} — Notifications</h1>
-            <h3 className="slide-subtitle">Customer • Provider • Internal</h3>
+            <h1>{useCase.code} — {useCase.title}</h1>
+            <h3 className="slide-subtitle">Process Flow: Intake → Routing → Execution → Closeout</h3>
+            <div className="slide-content">
+              {useCase.swimlaneData ? (
+                <div className="process-flow-diagram">
+                  <SwimlaneFlow lanes={useCase.swimlaneData} />
+                </div>
+              ) : (
+                <ol>
+                  {useCase.steps.map((step, index) => (
+                    <li key={index}>{step}</li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          </div>
+        );
+      } else if (useCaseSlideType === 2) {
+        return (
+          <div className="slide usecase-slide">
+            <h1>{useCase.code} — {useCase.title}</h1>
+            <h3 className="slide-subtitle">Notifications: Customer • Provider • Internal</h3>
             <div className="slide-content">
               <ul>
                 {useCase.notifications.map((notification, index) => (
@@ -1024,8 +1024,8 @@ export default function ConceptPage() {
       } else {
         return (
           <div className="slide usecase-slide">
-            <h1>{useCase.code} — Outcomes & KPIs</h1>
-            <h3 className="slide-subtitle">Measure what matters</h3>
+            <h1>{useCase.code} — {useCase.title}</h1>
+            <h3 className="slide-subtitle">Outcomes & KPIs: Measure what matters</h3>
             <div className="slide-content">
               <p className="outcome">Case closed; systems synced (Service, MET, Jira, IMS, SAP)</p>
               <div className="kpis-section">
