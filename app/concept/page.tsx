@@ -463,35 +463,26 @@ const useCases = [
       "Close; SAP reconcile; survey",
     ],
     mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for depot refurb with loaner
+      %% Simplified horizontal wrapping with subgraphs for depot refurb with loaner
       subgraph Row1 ["Initial Setup"]
         A[Service Case created] --> B[Two MET jobs: pickup + loaner]
-        B --> C[External providers bid]
-        C --> D[Ops awards both jobs]
+        B --> C[External providers bid] --> D[Ops awards both jobs]
       end
       
       subgraph Row2 ["Parallel Execution"]
-        D --> E[Driver picks up broken device]
-        D --> F[Field Tech delivers loaner + setup]
-        E --> G[IMS: broken → In Depot]
-        F --> H[IMS: loaner → Assigned]
+        D --> E[Driver picks up broken device] --> G[IMS: broken → In Depot]
+        D --> F[Field Tech delivers loaner + setup] --> H[IMS: loaner → Assigned]
       end
       
       subgraph Row3 ["Depot Process"]
-        G --> I[Depot refurb in Jira]
-        I --> J[Diagnostic → Repair → QA → Pack]
+        G --> I[Depot refurb in Jira] --> J[Diagnostic → Repair → QA → Pack]
         J --> K[Device ready for return]
       end
       
-      subgraph Row4 ["Swap Back"]
+      subgraph Row4 ["Swap Back & Completion"]
         K --> L[Two more MET jobs created]
-        L --> M[Job C: Deliver repaired device]
-        L --> N[Job D: Pickup loaner]
-        M --> O[IMS: repaired → Active at Clinic]
-        N --> P[IMS: loaner → Available]
-      end
-      
-      subgraph Row5 ["Completion"]
+        L --> M[Job C: Deliver repaired device] --> O[IMS: repaired → Active at Clinic]
+        L --> N[Job D: Pickup loaner] --> P[IMS: loaner → Available]
         O --> Q[Close Case + Survey]
         P --> Q
         Q --> R[SAP cost reconciliation]
