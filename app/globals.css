@@ -415,6 +415,25 @@
   margin: 10px !important;
 }
 
+/* Subgraph styling for better horizontal layout */
+.mermaid-diagram svg .flowchart .subgraph {
+  fill: rgba(51, 65, 85, 0.3) !important;
+  stroke: #475569 !important;
+  stroke-width: 2px !important;
+  rx: 8px !important;
+  ry: 8px !important;
+}
+
+.mermaid-diagram svg .flowchart .subgraph .label {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  fill: #a78bfa !important;
+}
+
+.mermaid-diagram svg .flowchart .subgraph .node {
+  margin: 8px !important;
+}
+
 /* Responsive diagram sizing */
 @media (max-width: 768px) {
   .process-flow-diagram {

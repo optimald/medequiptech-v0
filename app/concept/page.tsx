@@ -149,29 +149,35 @@ const useCases = [
       "Inventory ready → listed on mrp.io; IMS updated",
       "Close Case; survey; SAP reconciles costs",
     ],
-    mermaidDiagram: `flowchart TD
-      %% Sales Process
-      A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won]
-      B --> C[Auto-create Service Case]
+    mermaidDiagram: `flowchart LR
+      %% Force wrapping by using subgraphs
+      subgraph SG1 ["Sales & Case Creation"]
+        A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won]
+        B --> C[Auto-create Service Case]
+      end
       
-      %% Job Creation & Bidding
-      C --> D[Case Router → MET Job]
-      D --> E[External drivers bid]
-      E --> F[Ops selects winner]
+      subgraph SG2 ["Job Management"]
+        C --> D[Case Router → MET Job]
+        D --> E[External drivers bid]
+        E --> F[Ops selects winner]
+      end
       
-      %% Execution
-      F --> G[Driver pickup on-site]
-      G --> H[Scan serials → IMS]
-      H --> I[Depot intake → Jira]
+      subgraph SG3 ["Execution"]
+        F --> G[Driver pickup on-site]
+        G --> H[Scan serials → IMS]
+        H --> I[Depot intake → Jira]
+      end
       
-      %% Refurb Process
-      I --> J[Diagnostic → Repair → QA → Pack]
-      J --> K[Parts via Warehouse/SAP]
+      subgraph SG4 ["Refurb Process"]
+        I --> J[Diagnostic → Repair → QA → Pack]
+        J --> K[Parts via Warehouse/SAP]
+      end
       
-      %% Completion
-      K --> L[Inventory ready for resale]
-      L --> M[Close Case + Survey]
-      M --> N[SAP cost reconciliation]`,
+      subgraph SG5 ["Completion"]
+        K --> L[Inventory ready for resale]
+        L --> M[Close Case + Survey]
+        M --> N[SAP cost reconciliation]
+      end`,
     notifications: [
       "CSR/Ops alerted on Case creation",
       "Client pickup window",
