@@ -162,22 +162,7 @@ const useCases = [
       J --> K[Parts via Warehouse/SAP]
       K --> L[Inventory ready for resale]
       L --> M[Close Case + Survey]
-      M --> N[SAP cost reconciliation]
-      
-      style A fill:#60a5fa
-      style B fill:#a78bfa
-      style C fill:#10b981
-      style D fill:#60a5fa
-      style E fill:#a78bfa
-      style F fill:#10b981
-      style G fill:#60a5fa
-      style H fill:#a78bfa
-      style I fill:#10b981
-      style J fill:#60a5fa
-      style K fill:#a78bfa
-      style L fill:#10b981
-      style M fill:#60a5fa
-      style N fill:#a78bfa`,
+      M --> N[SAP cost reconciliation]`,
     notifications: [
       "CSR/Ops alerted on Case creation",
       "Client pickup window",
@@ -224,23 +209,7 @@ const useCases = [
       K --> L[Parts consume/return scan]
       L --> M[Sync to Service Case]
       M --> N[Close Case + Survey]
-      N --> O[SAP cost reconciliation]
-      
-      style A fill:#60a5fa
-      style B fill:#a78bfa
-      style C fill:#10b981
-      style D fill:#60a5fa
-      style E fill:#a78bfa
-      style F fill:#10b981
-      style G fill:#60a5fa
-      style H fill:#a78bfa
-      style I fill:#10b981
-      style J fill:#60a5fa
-      style K fill:#a78bfa
-      style L fill:#10b981
-      style M fill:#60a5fa
-      style N fill:#a78bfa
-      style O fill:#10b981`,
+      N --> O[SAP cost reconciliation]`,
     notifications: ["Appointment, en‑route SMS", "Parts ETA if needed", "Completion email"],
     kpis: ["Response time", "First‑visit fix", "Parts return compliance"],
   },
@@ -289,23 +258,7 @@ const useCases = [
       O --> Q[IMS: loaner → Available]
       P --> R[Close Case + Survey]
       Q --> R
-      R --> S[SAP cost reconciliation]
-      
-      style A fill:#60a5fa
-      style D fill:#a78bfa
-      style E fill:#10b981
-      style F fill:#10b981
-      style I fill:#60a5fa
-      style J fill:#a78bfa
-      style K fill:#10b981
-      style L fill:#60a5fa
-      style M fill:#a78bfa
-      style N fill:#10b981
-      style O fill:#10b981
-      style P fill:#60a5fa
-      style Q fill:#a78bfa
-      style R fill:#10b981
-      style S fill:#60a5fa`,
+      R --> S[SAP cost reconciliation]`,
     notifications: ["Pickup & loaner scheduling", "Repair ETA", "Swap‑back notice"],
     kpis: ["Time to loaner", "Depot cycle time", "% loaner coverage"],
   },
@@ -647,6 +600,9 @@ export default function ConceptPage() {
              <div className="slide-content">
                {useCase.mermaidDiagram ? (
                  <div className="process-flow-diagram">
+                   <div style={{ marginBottom: '1rem', padding: '0.5rem', background: 'rgba(51, 65, 85, 0.2)', borderRadius: '4px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                     Debug: Chart length: {useCase.mermaidDiagram.length} characters
+                   </div>
                    <MermaidDiagram chart={useCase.mermaidDiagram} />
                  </div>
                ) : (
