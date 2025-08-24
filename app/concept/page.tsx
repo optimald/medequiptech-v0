@@ -149,7 +149,7 @@ const useCases = [
       "Inventory ready → listed on mrp.io; IMS updated",
       "Close Case; survey; SAP reconciles costs",
     ],
-    mermaidDiagram: `flowchart TD
+    mermaidDiagram: `flowchart LR
       A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won]
       B --> C[Auto-create Service Case]
       C --> D[Case Router → MET Job]
@@ -195,7 +195,7 @@ const useCases = [
       "On‑site repair checklist; parts consume/return",
       "Sync to Case; closeout; SAP reconcile; survey",
     ],
-    mermaidDiagram: `flowchart TD
+    mermaidDiagram: `flowchart LR
       A[Clinic reports device failure] --> B[CSR opens Service Case]
       B --> C[Entitlement check + SLA start]
       C --> D[Case Router → MET Job]
@@ -239,7 +239,7 @@ const useCases = [
       "Return & swap back (Jobs C & D); statuses flip",
       "Close; SAP reconcile; survey",
     ],
-    mermaidDiagram: `flowchart TD
+    mermaidDiagram: `flowchart LR
       A[Clinic reports device failure] --> B[CSR opens Service Case]
       B --> C[Entitlement check: loaner available?]
       C --> D[Two MET Jobs created]

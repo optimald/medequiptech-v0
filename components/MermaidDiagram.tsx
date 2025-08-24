@@ -53,8 +53,9 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
           curve: 'basis',
           padding: 30,
           useMaxWidth: true,
-          nodeSpacing: 50,
-          rankSpacing: 50,
+          nodeSpacing: 40,
+          rankSpacing: 60,
+          wrap: true,
         },
         sequence: {
           diagramMarginX: 60,

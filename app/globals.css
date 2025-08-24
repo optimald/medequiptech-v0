@@ -375,6 +375,17 @@
   min-height: 300px;
 }
 
+/* Horizontal Flowchart Specific Styling */
+.mermaid-diagram svg .flowchart {
+  max-width: 100%;
+  overflow: visible;
+}
+
+.mermaid-diagram svg .flowchart .node {
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
 /* Responsive diagram sizing */
 @media (max-width: 768px) {
   .process-flow-diagram {
