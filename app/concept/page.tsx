@@ -509,6 +509,60 @@ const useCases = [
       "On‑site: checklist; parts consume/return; signature",
       "Job.Completed → sync → close; SAP payout & billing; survey",
     ],
+    swimlaneData: [
+      {
+        name: "Case Intake & Job Creation",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Clinic reports device failure (Service Cloud)",
+          "CSR creates Case + SLA start (Service Cloud)",
+          "Service Cloud posts repair job to MET",
+          "MET platform opens for tech bidding"
+        ]
+      },
+      {
+        name: "Bidding & Award",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "External techs bid on repair job (MET)",
+          "Ops reviews bids and selects winner (MET)",
+          "Award reflected in Service Case (Service Cloud)",
+          "Tech assignment notification sent (Service Cloud)"
+        ]
+      },
+      {
+        name: "Parts Preparation",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "MET requests parts prediction (Parts Orchestrator)",
+          "Parts Orchestrator reserves predicted parts (Warehouse)",
+          "Parts package prepared and ready (Warehouse)",
+          "Tech notified of parts pickup (MET)"
+        ]
+      },
+      {
+        name: "On-Site Execution",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Tech picks up parts package (Warehouse)",
+          "Tech arrives on-site at clinic",
+          "Repair checklist execution (MET)",
+          "Parts consumed/returned scanning (MET)"
+        ]
+      },
+      {
+        name: "Completion & Sync",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Device history updated in IMS (MET)",
+          "Parts costs posted to SAP (MET)",
+          "Job completed in MET platform",
+          "Completion synced to Service Case (Service Cloud)",
+          "Satisfaction survey sent (Service Cloud)",
+          "Tech payout triggered (SAP)"
+        ]
+      }
+    ],
     mermaidDiagram: `sequenceDiagram
       participant C as Clinic
       participant S as Service Cloud
