@@ -349,7 +349,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 500px;
+  min-height: 600px;
 }
 
 .process-flow-diagram svg {
@@ -372,22 +372,24 @@
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   max-width: 100%;
   height: auto;
-  min-height: 400px;
+  min-height: 500px;
 }
 
 /* Horizontal Flowchart Specific Styling */
 .mermaid-diagram svg .flowchart {
   max-width: 100%;
   overflow: visible;
+  width: 100% !important;
 }
 
 .mermaid-diagram svg .flowchart .node {
-  min-width: 120px;
-  min-height: 60px;
-  max-width: 250px;
+  min-width: 150px;
+  min-height: 80px;
+  max-width: 300px;
   word-wrap: break-word;
-  font-size: 16px !important;
+  font-size: 18px !important;
   line-height: 1.4 !important;
+  padding: 8px !important;
 }
 
 .mermaid-diagram svg .flowchart .node text {
@@ -398,6 +400,19 @@
 .mermaid-diagram svg .flowchart .edgeLabel {
   font-size: 14px !important;
   font-weight: 500 !important;
+}
+
+/* Force wrapping and better layout */
+.mermaid-diagram svg .flowchart .rank {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 20px !important;
+}
+
+.mermaid-diagram svg .flowchart .rank .node {
+  flex-shrink: 0 !important;
+  margin: 10px !important;
 }
 
 /* Responsive diagram sizing */
