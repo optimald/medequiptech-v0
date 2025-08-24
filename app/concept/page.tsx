@@ -149,17 +149,26 @@ const useCases = [
       "Inventory ready → listed on mrp.io; IMS updated",
       "Close Case; survey; SAP reconciles costs",
     ],
-    mermaidDiagram: `flowchart LR
+    mermaidDiagram: `flowchart TD
+      %% Sales Process
       A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won]
       B --> C[Auto-create Service Case]
+      
+      %% Job Creation & Bidding
       C --> D[Case Router → MET Job]
       D --> E[External drivers bid]
       E --> F[Ops selects winner]
+      
+      %% Execution
       F --> G[Driver pickup on-site]
       G --> H[Scan serials → IMS]
       H --> I[Depot intake → Jira]
+      
+      %% Refurb Process
       I --> J[Diagnostic → Repair → QA → Pack]
       J --> K[Parts via Warehouse/SAP]
+      
+      %% Completion
       K --> L[Inventory ready for resale]
       L --> M[Close Case + Survey]
       M --> N[SAP cost reconciliation]`,
@@ -600,9 +609,6 @@ export default function ConceptPage() {
              <div className="slide-content">
                {useCase.mermaidDiagram ? (
                  <div className="process-flow-diagram">
-                   <div style={{ marginBottom: '1rem', padding: '0.5rem', background: 'rgba(51, 65, 85, 0.2)', borderRadius: '4px', fontSize: '0.75rem', color: '#94a3b8' }}>
-                     Debug: Chart length: {useCase.mermaidDiagram.length} characters
-                   </div>
                    <MermaidDiagram chart={useCase.mermaidDiagram} />
                  </div>
                ) : (
