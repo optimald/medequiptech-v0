@@ -149,42 +149,22 @@ const useCases = [
       "Inventory ready → listed on mrp.io; IMS updated",
       "Close Case; survey; SAP reconciles costs",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Horizontal flow with forced row breaks for logical sections
+    mermaidDiagram: `flowchart TD
+      %% Force each section into its own row using TD (Top-Down) layout
       %% Row 1: Sales & Case Creation
       A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won] --> C[Auto-create Service Case]
       
-      %% Force row break with invisible node
-      C --> X1[ ]
-      X1 --> D[Case Router → MET Job]
-      
-      %% Row 2: Job Creation & Bidding
-      D --> E[External drivers bid] --> F[Ops selects winner]
-      
-      %% Force row break
-      F --> X2[ ]
-      X2 --> G[Driver pickup on-site]
+      %% Row 2: Job Creation & Bidding  
+      C --> D[Case Router → MET Job] --> E[External drivers bid] --> F[Ops selects winner]
       
       %% Row 3: Pickup & Intake
-      G --> H[Scan serials → IMS] --> I[Depot intake → Jira]
-      
-      %% Force row break
-      I --> X3[ ]
-      X3 --> J[Diagnostic → Repair → QA → Pack]
+      F --> G[Driver pickup on-site] --> H[Scan serials → IMS] --> I[Depot intake → Jira]
       
       %% Row 4: Refurb Process
-      J --> K[Parts via Warehouse/SAP]
-      
-      %% Force row break
-      K --> X4[ ]
-      X4 --> L[Inventory ready for resale]
+      I --> J[Diagnostic → Repair → QA → Pack] --> K[Parts via Warehouse/SAP]
       
       %% Row 5: Completion
-      L --> M[Close Case + Survey] --> N[SAP cost reconciliation]
-      
-      %% Hide invisible nodes
-      classDef invisible fill:none,stroke:none
-      class X1,X2,X3,X4 invisible`,
+      K --> L[Inventory ready for resale] --> M[Close Case + Survey] --> N[SAP cost reconciliation]`,
     notifications: [
       "CSR/Ops alerted on Case creation",
       "Client pickup window",

@@ -376,11 +376,14 @@
   min-height: 500px;
 }
 
-/* Vertical Flowchart Styling */
+/* Top-Down Flowchart Styling */
 .mermaid-diagram svg .flowchart {
   max-width: 100%;
   overflow: visible;
   width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 40px !important;
 }
 
 .mermaid-diagram svg .flowchart .node {
@@ -410,21 +413,13 @@
   flex-wrap: wrap !important;
   justify-content: center !important;
   gap: 20px !important;
+  margin-bottom: 30px !important;
+  padding: 20px 0 !important;
 }
 
 .mermaid-diagram svg .flowchart .rank .node {
   flex-shrink: 0 !important;
   margin: 10px !important;
-}
-
-/* Hide invisible nodes completely */
-.mermaid-diagram svg .flowchart .node.invisible {
-  display: none !important;
-}
-
-/* Ensure proper row spacing */
-.mermaid-diagram svg .flowchart {
-  row-gap: 40px !important;
 }
 
 /* Subgraph styling for better horizontal layout */
