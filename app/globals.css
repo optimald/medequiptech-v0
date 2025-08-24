@@ -376,14 +376,11 @@
   min-height: 500px;
 }
 
-/* Top-Down Flowchart Styling */
+/* Vertical Flowchart Styling */
 .mermaid-diagram svg .flowchart {
   max-width: 100%;
   overflow: visible;
   width: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 40px !important;
 }
 
 .mermaid-diagram svg .flowchart .node {
@@ -413,8 +410,6 @@
   flex-wrap: wrap !important;
   justify-content: center !important;
   gap: 20px !important;
-  margin-bottom: 30px !important;
-  padding: 20px 0 !important;
 }
 
 .mermaid-diagram svg .flowchart .rank .node {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Home, Play, Pause, RotateCcw } from 'lucide-react';
-import MermaidDiagram from '@/components/MermaidDiagram';
+import SwimlaneFlow from '@/components/SwimlaneFlow';
 
 // Platform content from MET_platforms.md
 const platforms = [
@@ -149,22 +149,52 @@ const useCases = [
       "Inventory ready → listed on mrp.io; IMS updated",
       "Close Case; survey; SAP reconciles costs",
     ],
-    mermaidDiagram: `flowchart TD
-      %% Force each section into its own row using TD (Top-Down) layout
-      %% Row 1: Sales & Case Creation
-      A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won] --> C[Auto-create Service Case]
-      
-      %% Row 2: Job Creation & Bidding  
-      C --> D[Case Router → MET Job] --> E[External drivers bid] --> F[Ops selects winner]
-      
-      %% Row 3: Pickup & Intake
-      F --> G[Driver pickup on-site] --> H[Scan serials → IMS] --> I[Depot intake → Jira]
-      
-      %% Row 4: Refurb Process
-      I --> J[Diagnostic → Repair → QA → Pack] --> K[Parts via Warehouse/SAP]
-      
-      %% Row 5: Completion
-      K --> L[Inventory ready for resale] --> M[Close Case + Survey] --> N[SAP cost reconciliation]`,
+    swimlaneData: [
+      {
+        name: "Sales & Case Creation",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Sales Rep closes trade-in",
+          "Sales Cloud: Close/Won",
+          "Auto-create Service Case"
+        ]
+      },
+      {
+        name: "Job Creation & Bidding",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Case Router → MET Job",
+          "External drivers bid",
+          "Ops selects winner"
+        ]
+      },
+      {
+        name: "Pickup & Intake",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Driver pickup on-site",
+          "Scan serials → IMS",
+          "Depot intake → Jira"
+        ]
+      },
+      {
+        name: "Refurb Process",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Diagnostic → Repair → QA → Pack",
+          "Parts via Warehouse/SAP"
+        ]
+      },
+      {
+        name: "Completion",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Inventory ready for resale",
+          "Close Case + Survey",
+          "SAP cost reconciliation"
+        ]
+      }
+    ],
     notifications: [
       "CSR/Ops alerted on Case creation",
       "Client pickup window",
@@ -183,35 +213,52 @@ const useCases = [
       "Delivery scan → IMS owner set; Training executed",
       "Artifacts synced to Case; survey; SAP billing",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for web purchase flow
-      subgraph Row1 ["Sales & Case Creation"]
-        A[Web purchase from mrp.io] --> B[Sales Order created]
-        B --> C[Service Case auto-generated]
-      end
-      
-      subgraph Row2 ["Depot Preparation"]
-        C --> D[Jira prep/QA process]
-        D --> E[Parts via Warehouse/SAP]
-        E --> F[Device ready for delivery]
-      end
-      
-      subgraph Row3 ["Job Creation & Bidding"]
-        F --> G[MET jobs: Delivery + Training]
-        G --> H[External providers bid]
-        H --> I[Ops selects winners]
-      end
-      
-      subgraph Row4 ["Execution"]
-        I --> J[Delivery scan → IMS owner set]
-        J --> K[Training executed on-site]
-      end
-      
-      subgraph Row5 ["Completion"]
-        K --> L[Artifacts synced to Case]
-        L --> M[Survey sent]
-        M --> N[SAP billing completed]
-      end`,
+    swimlaneData: [
+      {
+        name: "Sales & Case Creation",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Web purchase from mrp.io",
+          "Sales Order created",
+          "Service Case auto-generated"
+        ]
+      },
+      {
+        name: "Depot Preparation",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Jira prep/QA process",
+          "Parts via Warehouse/SAP",
+          "Device ready for delivery"
+        ]
+      },
+      {
+        name: "Job Creation & Bidding",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "MET jobs: Delivery + Training",
+          "External providers bid",
+          "Ops selects winners"
+        ]
+      },
+      {
+        name: "Execution",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Delivery scan → IMS owner set",
+          "Training executed on-site"
+        ]
+      },
+      {
+        name: "Completion",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Artifacts synced to Case",
+          "Survey sent",
+          "SAP billing completed"
+        ]
+      }
+    ],
     notifications: ["Schedule confirmations", "Training completion"],
     kpis: ["Fulfillment time", "Training completion rate", "CSAT"],
   },
@@ -226,36 +273,53 @@ const useCases = [
       "On‑site repair checklist; parts consume/return",
       "Sync to Case; closeout; SAP reconcile; survey",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs
-      subgraph Row1 ["Initial Response"]
-        A[Clinic reports device failure] --> B[CSR opens Service Case]
-        B --> C[Entitlement check + SLA start]
-      end
-      
-      subgraph Row2 ["Job Creation & Bidding"]
-        C --> D[Case Router → MET Job]
-        D --> E[External techs bid]
-        E --> F[Ops selects winner]
-      end
-      
-      subgraph Row3 ["Parts Planning"]
-        F --> G[Pre-visit parts planning]
-        G --> H[Parts Prediction Engine]
-        H --> I[Parts Orchestrator reserve]
-      end
-      
-      subgraph Row4 ["Execution"]
-        I --> J[Tech arrives with parts]
-        J --> K[On-site repair checklist]
-        K --> L[Parts consume/return scan]
-      end
-      
-      subgraph Row5 ["Completion"]
-        L --> M[Sync to Service Case]
-        M --> N[Close Case + Survey]
-        N --> O[SAP cost reconciliation]
-      end`,
+    swimlaneData: [
+      {
+        name: "Initial Response",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Clinic reports device failure",
+          "CSR opens Service Case",
+          "Entitlement check + SLA start"
+        ]
+      },
+      {
+        name: "Job Creation & Bidding",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Case Router → MET Job",
+          "External techs bid",
+          "Ops selects winner"
+        ]
+      },
+      {
+        name: "Parts Planning",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Pre-visit parts planning",
+          "Parts Prediction Engine",
+          "Parts Orchestrator reserve"
+        ]
+      },
+      {
+        name: "Execution",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Tech arrives with parts",
+          "On-site repair checklist",
+          "Parts consume/return scan"
+        ]
+      },
+      {
+        name: "Completion",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Sync to Service Case",
+          "Close Case + Survey",
+          "SAP cost reconciliation"
+        ]
+      }
+    ],
     notifications: ["Appointment, en‑route SMS", "Parts ETA if needed", "Completion email"],
     kpis: ["Response time", "First‑visit fix", "Parts return compliance"],
   },
@@ -270,31 +334,44 @@ const useCases = [
       "Sequence: outlet → deliver (scan) → train",
       "Close Case; SAP billing; survey",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for new device sale flow
-      subgraph Row1 ["Sales & Case Creation"]
-        A[Sales: Close/Won → Service Case]
-        B[Jira prep/QA; Parts via Warehouse/SAP]
-        C[IMS updated with device info]
-      end
-      
-      subgraph Row2 ["Job Creation & Bidding"]
-        C --> D[MET jobs: Electrical + Delivery + Training]
-        D --> E[External providers bid on jobs]
-        E --> F[Ops selects winners for each job]
-      end
-      
-      subgraph Row3 ["Sequential Execution"]
-        F --> G[Electrical: Install outlet/prep location]
-        G --> H[Delivery: Driver delivers device on-site]
-        H --> I[Training: Trainer executes training]
-      end
-      
-      subgraph Row4 ["Completion"]
-        I --> J[All artifacts synced to Case]
-        J --> K[Close Case + Survey]
-        K --> L[SAP billing completed]
-      end`,
+    swimlaneData: [
+      {
+        name: "Sales & Case Creation",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Sales: Close/Won → Service Case",
+          "Jira prep/QA; Parts via Warehouse/SAP",
+          "IMS updated with device info"
+        ]
+      },
+      {
+        name: "Job Creation & Bidding",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "MET jobs: Electrical + Delivery + Training",
+          "External providers bid on jobs",
+          "Ops selects winners for each job"
+        ]
+      },
+      {
+        name: "Sequential Execution",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Electrical: Install outlet/prep location",
+          "Delivery: Driver delivers device on-site",
+          "Training: Trainer executes training"
+        ]
+      },
+      {
+        name: "Completion",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "All artifacts synced to Case",
+          "Close Case + Survey",
+          "SAP billing completed"
+        ]
+      }
+    ],
     notifications: ["All schedule confirmations", "Completion summaries"],
     kpis: ["On‑time sequence", "Install quality", "CSAT"],
   },
@@ -310,41 +387,53 @@ const useCases = [
       "Return & swap back (Jobs C & D); statuses flip",
       "Close; SAP reconcile; survey",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for complex loaner flow
-      subgraph Row1 ["Initial Assessment"]
-        A[Clinic reports device failure] --> B[CSR opens Service Case]
-        B --> C[Entitlement check: loaner available?]
-        C --> D[Two MET Jobs created]
-      end
-      
-      subgraph Row2 ["Parallel Jobs - Pickup & Loaner"]
-        D --> E[Job A: Pickup broken device]
-        D --> F[Job B: Deliver loaner + setup]
-      end
-      
-      subgraph Row3 ["Execution & IMS Updates"]
-        E --> G[Driver picks up broken device]
-        F --> H[Tech delivers & sets up loaner]
-        G --> I[IMS: broken → In Depot]
-        H --> J[IMS: loaner → Assigned]
-      end
-      
-      subgraph Row4 ["Depot Process"]
-        I --> K[Depot refurb in Jira]
-        K --> L[Diagnostic → Repair → QA → Pack]
-        L --> M[Two more MET Jobs]
-      end
-      
-      subgraph Row5 ["Final Swap & Completion"]
-        M --> N[Job C: Deliver repaired device]
-        M --> O[Job D: Pickup loaner]
-        N --> P[IMS: repaired → Active at Clinic]
-        O --> Q[IMS: loaner → Available]
-        P --> R[Close Case + Survey]
-        Q --> R
-        R --> S[SAP cost reconciliation]
-      end`,
+    swimlaneData: [
+      {
+        name: "Initial Assessment",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Clinic reports device failure",
+          "CSR opens Service Case",
+          "Entitlement check: loaner available?",
+          "Two MET Jobs created"
+        ]
+      },
+      {
+        name: "Parallel Jobs - Pickup & Loaner",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Job A: Pickup broken device",
+          "Job B: Deliver loaner + setup"
+        ]
+      },
+      {
+        name: "Execution & IMS Updates",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Driver picks up broken device → IMS: broken → In Depot",
+          "Tech delivers & sets up loaner → IMS: loaner → Assigned"
+        ]
+      },
+      {
+        name: "Depot Process",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Depot refurb in Jira",
+          "Diagnostic → Repair → QA → Pack",
+          "Two more MET Jobs"
+        ]
+      },
+      {
+        name: "Final Swap & Completion",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Job C: Deliver repaired device → IMS: repaired → Active at Clinic",
+          "Job D: Pickup loaner → IMS: loaner → Available",
+          "Close Case + Survey",
+          "SAP cost reconciliation"
+        ]
+      }
+    ],
     notifications: ["Pickup & loaner scheduling", "Repair ETA", "Swap‑back notice"],
     kpis: ["Time to loaner", "Depot cycle time", "% loaner coverage"],
   },
@@ -358,37 +447,54 @@ const useCases = [
       "Outbound ship; tracking posted",
       "Close; warranty billing rules in SAP; survey",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for handpiece RMA flow
-      subgraph Row1 ["Case Creation & Shipping"]
-        A[Clinic reports handpiece failure] --> B[CSR opens Service Case + RMA]
-        B --> C[Generate shipping label & tracking]
-        C --> D[Clinic ships handpiece to depot]
-      end
-      
-      subgraph Row2 ["Depot Processing"]
-        D --> E[Depot receives handpiece]
-        E --> F[Depot logs receipt in Jira]
-        F --> G[Diagnostic assessment]
-      end
-      
-      subgraph Row3 ["Rebuild Process"]
-        G --> H[Rebuild process begins]
-        H --> I[Parts ordered from Warehouse/SAP]
-        I --> J[Rebuild completed]
-      end
-      
-      subgraph Row4 ["Quality & Shipping"]
-        J --> K[QA testing & validation]
-        K --> L[Outbound shipping preparation]
-        L --> M[Ship back to clinic]
-      end
-      
-      subgraph Row5 ["Completion"]
-        M --> N[Tracking posted to Case]
-        N --> O[Close Case + Survey]
-        O --> P[Warranty billing rules in SAP]
-      end`,
+    swimlaneData: [
+      {
+        name: "Case Creation & Shipping",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Clinic reports handpiece failure",
+          "CSR opens Service Case + RMA",
+          "Generate shipping label & tracking",
+          "Clinic ships handpiece to depot"
+        ]
+      },
+      {
+        name: "Depot Processing",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Depot receives handpiece",
+          "Depot logs receipt in Jira",
+          "Diagnostic assessment"
+        ]
+      },
+      {
+        name: "Rebuild Process",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Rebuild process begins",
+          "Parts ordered from Warehouse/SAP",
+          "Rebuild completed"
+        ]
+      },
+      {
+        name: "Quality & Shipping",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "QA testing & validation",
+          "Outbound shipping preparation",
+          "Ship back to clinic"
+        ]
+      },
+      {
+        name: "Completion",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Tracking posted to Case",
+          "Close Case + Survey",
+          "Warranty billing rules in SAP"
+        ]
+      }
+    ],
     notifications: ["We received it", "Rebuild in progress", "Shipped back"],
     kpis: ["Door‑to‑door cycle", "QA first‑pass", "CSAT"],
   },
@@ -449,31 +555,46 @@ const useCases = [
       "Swap‑back jobs; IMS statuses reversed",
       "Close; SAP reconcile; survey",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Simplified horizontal wrapping with subgraphs for depot refurb with loaner
-      subgraph Row1 ["Initial Setup"]
-        A[Service Case created] --> B[Two MET jobs: pickup + loaner]
-        B --> C[External providers bid] --> D[Ops awards both jobs]
-      end
-      
-      subgraph Row2 ["Parallel Execution"]
-        D --> E[Driver picks up broken device] --> G[IMS: broken → In Depot]
-        D --> F[Field Tech delivers loaner + setup] --> H[IMS: loaner → Assigned]
-      end
-      
-      subgraph Row3 ["Depot Process"]
-        G --> I[Depot refurb in Jira] --> J[Diagnostic → Repair → QA → Pack]
-        J --> K[Device ready for return]
-      end
-      
-      subgraph Row4 ["Swap Back & Completion"]
-        K --> L[Two more MET jobs created]
-        L --> M[Job C: Deliver repaired device] --> O[IMS: repaired → Active at Clinic]
-        L --> N[Job D: Pickup loaner] --> P[IMS: loaner → Available]
-        O --> Q[Close Case + Survey]
-        P --> Q
-        Q --> R[SAP cost reconciliation]
-      end`,
+    swimlaneData: [
+      {
+        name: "Initial Setup",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Service Case created",
+          "Two MET jobs: pickup + loaner",
+          "External providers bid",
+          "Ops awards both jobs"
+        ]
+      },
+      {
+        name: "Parallel Execution",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Driver picks up broken device → IMS: broken → In Depot",
+          "Field Tech delivers loaner + setup → IMS: loaner → Assigned"
+        ]
+      },
+      {
+        name: "Depot Process",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Depot refurb in Jira",
+          "Diagnostic → Repair → QA → Pack",
+          "Device ready for return"
+        ]
+      },
+      {
+        name: "Swap Back & Completion",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Two more MET jobs created",
+          "Job C: Deliver repaired device → IMS: repaired → Active at Clinic",
+          "Job D: Pickup loaner → IMS: loaner → Available",
+          "Close Case + Survey",
+          "SAP cost reconciliation"
+        ]
+      }
+    ],
     notifications: ["Loaner active", "Refurb ETA", "Swap scheduling"],
     kpis: ["Loaner SLA", "Depot cycle", "Repeat failure rate"],
   },
@@ -486,37 +607,54 @@ const useCases = [
       "Jira rebuild; IMS sub‑component lineage",
       "Outbound tracking; close", 
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for handpiece rebuild
-      subgraph Row1 ["Case Creation & Shipping"]
-        A[Clinic reports handpiece failure] --> B[CSR opens Service Case + RMA]
-        B --> C[Generate shipping label & tracking]
-        C --> D[Clinic ships handpiece to depot]
-      end
-      
-      subgraph Row2 ["Depot Processing"]
-        D --> E[Depot receives handpiece]
-        E --> F[Depot logs receipt in Jira]
-        F --> G[Diagnostic assessment]
-      end
-      
-      subgraph Row3 ["Rebuild Process"]
-        G --> H[Rebuild process begins]
-        H --> I[Parts ordered from Warehouse/SAP]
-        I --> J[Rebuild completed]
-      end
-      
-      subgraph Row4 ["Quality & Shipping"]
-        J --> K[QA testing & validation]
-        K --> L[Outbound shipping preparation]
-        L --> M[Ship back to clinic]
-      end
-      
-      subgraph Row5 ["Completion"]
-        M --> N[Tracking posted to Case]
-        N --> O[Close Case + Survey]
-        O --> P[Warranty billing rules in SAP]
-      end`,
+    swimlaneData: [
+      {
+        name: "Case Creation & Shipping",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Clinic reports handpiece failure",
+          "CSR opens Service Case + RMA",
+          "Generate shipping label & tracking",
+          "Clinic ships handpiece to depot"
+        ]
+      },
+      {
+        name: "Depot Processing",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Depot receives handpiece",
+          "Depot logs receipt in Jira",
+          "Diagnostic assessment"
+        ]
+      },
+      {
+        name: "Rebuild Process",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Rebuild process begins",
+          "Parts ordered from Warehouse/SAP",
+          "Rebuild completed"
+        ]
+      },
+      {
+        name: "Quality & Shipping",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "QA testing & validation",
+          "Outbound shipping preparation",
+          "Ship back to clinic"
+        ]
+      },
+      {
+        name: "Completion",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Tracking posted to Case",
+          "Close Case + Survey",
+          "Warranty billing rules in SAP"
+        ]
+      }
+    ],
     notifications: ["Received", "Rebuild in progress", "Shipped back"],
     kpis: ["Cycle time", "Warranty vs billable mix", "CSAT"],
   },
@@ -530,35 +668,52 @@ const useCases = [
       "Embedded WebRTC session; transcript/artifacts",
       "Sync to Case; IMS updates if config changed; close; survey",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for virtual support
-      subgraph Row1 ["Case Creation"]
-        A[Clinic requests virtual support] --> B[CSR opens Service Case: Virtual Assist]
-        B --> C[Case routed to MET platform]
-      end
-      
-      subgraph Row2 ["Job Creation & Assignment"]
-        C --> D[MET job: Remote Assist created]
-        D --> E[Remote techs bid on job]
-        E --> F[Ops selects winner]
-      end
-      
-      subgraph Row3 ["Virtual Session"]
-        F --> G[Tech assigned to Case]
-        G --> H[Embedded WebRTC session starts]
-        H --> I[Remote diagnosis & support provided]
-      end
-      
-      subgraph Row4 ["Documentation & Updates"]
-        I --> J[Session transcript captured]
-        J --> K[Artifacts synced to Case]
-        K --> L[IMS updates if config changed]
-      end
-      
-      subgraph Row5 ["Completion"]
-        L --> M[Close Case + Survey]
-        M --> N[Tech payout processed]
-      end`,
+    swimlaneData: [
+      {
+        name: "Case Creation",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Clinic requests virtual support",
+          "CSR opens Service Case: Virtual Assist",
+          "Case routed to MET platform"
+        ]
+      },
+      {
+        name: "Job Creation & Assignment",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "MET job: Remote Assist created",
+          "Remote techs bid on job",
+          "Ops selects winner"
+        ]
+      },
+      {
+        name: "Virtual Session",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Tech assigned to Case",
+          "Embedded WebRTC session starts",
+          "Remote diagnosis & support provided"
+        ]
+      },
+      {
+        name: "Documentation & Updates",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Session transcript captured",
+          "Artifacts synced to Case",
+          "IMS updates if config changed"
+        ]
+      },
+      {
+        name: "Completion",
+        color: "from-purple-500 to-pink-400",
+        steps: [
+          "Close Case + Survey",
+          "Tech payout processed"
+        ]
+      }
+    ],
     notifications: ["Appt confirmation", "Completion summary"],
     kpis: ["Deflection rate", "Time to resolve", "CSAT"],
   },
@@ -572,30 +727,44 @@ const useCases = [
       "Training modules; activation",
       "Provider live in marketplace",
     ],
-    mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for service provider onboarding
-      subgraph Row1 ["Application & KYC"]
-        A[Applicant applies in MET platform] --> B[KYC verification process]
-        B --> C[Banking information collection]
-      end
-      
-      subgraph Row2 ["Review & Approval"]
-        C --> D[Ops Admin reviews application]
-        D --> E[Compliance checks completed]
-        E --> F[SAP vendor record created]
-      end
-      
-      subgraph Row3 ["Training & Activation"]
-        F --> G[Training modules assigned]
-        G --> H[Provider completes training]
-        H --> I[Account activation]
-      end
-      
-      subgraph Row4 ["Marketplace Integration"]
-        I --> J[Provider profile created]
-        J --> K[Provider live in marketplace]
-        K --> L[Ready to receive job bids]
-      end`,
+    swimlaneData: [
+      {
+        name: "Application & KYC",
+        color: "from-blue-500 to-cyan-400",
+        steps: [
+          "Applicant applies in MET platform",
+          "KYC verification process",
+          "Banking information collection"
+        ]
+      },
+      {
+        name: "Review & Approval",
+        color: "from-indigo-500 to-blue-400",
+        steps: [
+          "Ops Admin reviews application",
+          "Compliance checks completed",
+          "SAP vendor record created"
+        ]
+      },
+      {
+        name: "Training & Activation",
+        color: "from-amber-500 to-orange-400",
+        steps: [
+          "Training modules assigned",
+          "Provider completes training",
+          "Account activation"
+        ]
+      },
+      {
+        name: "Marketplace Integration",
+        color: "from-emerald-500 to-green-400",
+        steps: [
+          "Provider profile created",
+          "Provider live in marketplace",
+          "Ready to receive job bids"
+        ]
+      }
+    ],
     notifications: ["Welcome & next steps", "Onboarding complete"],
     kpis: ["Time to activate", "% passing compliance", "Early CSAT"],
   },
@@ -824,9 +993,9 @@ export default function ConceptPage() {
              <h1>{useCase.code} — Process Flow</h1>
              <h3 className="slide-subtitle">Intake → Routing → Execution → Closeout</h3>
              <div className="slide-content">
-               {useCase.mermaidDiagram ? (
+               {useCase.swimlaneData ? (
                  <div className="process-flow-diagram">
-                   <MermaidDiagram chart={useCase.mermaidDiagram} />
+                   <SwimlaneFlow lanes={useCase.swimlaneData} />
                  </div>
                ) : (
                  <ol>
