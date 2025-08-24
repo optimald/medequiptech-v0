@@ -18,16 +18,18 @@ export default function SwimlaneFlow({ lanes, title }: SwimlaneFlowProps) {
         </header>
       )}
 
-      {/* Two column grid: optimized lane label width, maximum track space */}
-      <div className="grid grid-cols-[150px,1fr] gap-x-3 gap-y-1 lg:gap-x-4 lg:gap-y-1.5">
-        {lanes.map((lane, laneIdx) => (
-          <Lane
-            key={lane.name}
-            {...lane}
-            showHandoff={laneIdx < lanes.length - 1}
-            nextLaneName={lanes[laneIdx + 1]?.name}
-          />
-        ))}
+      {/* Scrollable container for entire swimlane panel */}
+      <div className="overflow-x-auto scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400">
+        <div className="min-w-max">
+          {lanes.map((lane, laneIdx) => (
+            <Lane
+              key={lane.name}
+              {...lane}
+              showHandoff={laneIdx < lanes.length - 1}
+              nextLaneName={lanes[laneIdx + 1]?.name}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
