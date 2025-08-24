@@ -46,23 +46,26 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
           tertiaryColor: '#10b981',
           errorBkgColor: '#ef4444',
           errorTextColor: '#fef2f2',
-          fontSize: '14px',
+          fontSize: '16px',
         },
         flowchart: {
           htmlLabels: true,
           curve: 'basis',
-          padding: 20,
+          padding: 30,
+          useMaxWidth: true,
+          nodeSpacing: 50,
+          rankSpacing: 50,
         },
         sequence: {
-          diagramMarginX: 50,
-          diagramMarginY: 10,
-          actorMargin: 50,
-          width: 150,
-          height: 65,
-          boxMargin: 10,
-          boxTextMargin: 5,
-          noteMargin: 10,
-          messageMargin: 35,
+          diagramMarginX: 60,
+          diagramMarginY: 20,
+          actorMargin: 60,
+          width: 180,
+          height: 80,
+          boxMargin: 15,
+          boxTextMargin: 8,
+          noteMargin: 15,
+          messageMargin: 40,
           mirrorActors: true,
           bottomMarginAdj: 1,
           useMaxWidth: true,
@@ -188,7 +191,13 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
       {isRendered && svgContent && (
         <div 
           dangerouslySetInnerHTML={{ __html: svgContent }}
-          style={{ width: '100%', height: 'auto' }}
+          style={{ 
+            width: '100%', 
+            height: 'auto',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
         />
       )}
     </div>
