@@ -62,7 +62,7 @@ function Lane({
         <div className="absolute inset-x-0 top-0 h-px bg-slate-700/60" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-slate-700/60" />
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-thin scrollbar-track-slate-700 scrollbar-thumb-slate-500 hover:scrollbar-thumb-slate-400 relative group">
           <div className="flex items-stretch gap-2.5 py-1 min-w-max pr-6">
             {steps.map((s, i) => (
               <Step key={i} text={s} showArrow={i !== steps.length - 1} />
@@ -79,6 +79,10 @@ function Lane({
               </div>
             )}
           </div>
+          
+          {/* Scroll fade indicators */}
+          <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-slate-800 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-slate-800 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         </div>
       </div>
     </>
