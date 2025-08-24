@@ -66,6 +66,28 @@ export default function Header() {
             </Link>
           </div>
 
+          {/* Navigation Menu */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link
+              href="/dashboard"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/jobs"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Jobs
+            </Link>
+            <Link
+              href="/concept"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Platform Overview
+            </Link>
+          </nav>
+
           {/* User Menu */}
           <div className="relative" ref={menuRef}>
             <button
@@ -91,6 +113,31 @@ export default function Header() {
             {/* Dropdown Menu */}
             {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                {/* Mobile Navigation Links */}
+                <div className="md:hidden border-b border-gray-200 pb-2 mb-2">
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/jobs"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Jobs
+                  </Link>
+                  <Link
+                    href="/concept"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Platform Overview
+                  </Link>
+                </div>
+                
                 <Link
                   href="/profile"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
