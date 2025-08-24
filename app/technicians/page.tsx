@@ -82,8 +82,8 @@ export default function TechniciansPage() {
                 </Button>
               </Link>
               <Link href="/jobs?job_type=tech">
-                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold">
-                  View Available Jobs
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold bg-transparent">
+                  Browse Available Jobs
                 </Button>
               </Link>
             </div>
@@ -387,8 +387,8 @@ export default function TechniciansPage() {
         </div>
       </div>
 
-      {/* Sticky CTA Section */}
-      <div id="apply-now" className="py-20 bg-blue-600 text-white sticky bottom-0 z-50">
+      {/* CTA Section */}
+      <div id="apply-now" className="py-20 bg-blue-600 text-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">
             Ready to Transform Your Career?
@@ -405,7 +405,7 @@ export default function TechniciansPage() {
               </Button>
             </Link>
             <Link href="/jobs?job_type=tech">
-              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold">
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold bg-transparent">
                 Browse Available Jobs
               </Button>
             </Link>

@@ -81,7 +81,7 @@ export default function TrainersPage() {
                 </Button>
               </Link>
               <Link href="/jobs?job_type=trainer">
-                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-4 text-lg font-semibold">
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-4 text-lg font-semibold bg-transparent">
                   View Training Jobs
                 </Button>
               </Link>
@@ -419,8 +419,8 @@ export default function TrainersPage() {
         </div>
       </div>
 
-      {/* Sticky CTA Section */}
-      <div id="apply-now" className="py-20 bg-green-600 text-white sticky bottom-0 z-50">
+      {/* CTA Section */}
+      <div id="apply-now" className="py-20 bg-green-600 text-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">
             Ready to Transform Your Training Career?
@@ -437,7 +437,7 @@ export default function TrainersPage() {
               </Button>
             </Link>
             <Link href="/jobs?job_type=trainer">
-              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-4 text-lg font-semibold">
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-4 text-lg font-semibold bg-transparent">
                 Browse Training Jobs
               </Button>
             </Link>
