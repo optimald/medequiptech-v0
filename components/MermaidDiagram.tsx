@@ -12,6 +12,7 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
   const [isRendered, setIsRendered] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mermaid, setMermaid] = useState<any>(null);
+  const [svgContent, setSvgContent] = useState<string>('');
 
   // Dynamically import mermaid
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
 
   // Render diagram when mermaid is ready and chart changes
   useEffect(() => {
-    if (containerRef.current && chart && mermaid && !isRendered) {
+    if (chart && mermaid && !isRendered) {
       const renderDiagram = async () => {
         try {
           // Generate unique ID for this diagram
@@ -83,32 +84,17 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
           console.log('Rendering diagram with ID:', uniqueId);
           console.log('Chart content:', chart.substring(0, 100) + '...');
           
-          // Clear previous content
-          containerRef.current!.innerHTML = '';
-          
-          // Render the diagram
+          // Render the diagram to get SVG content
           const { svg } = await mermaid.render(uniqueId, chart);
           
-          if (containerRef.current) {
-            containerRef.current.innerHTML = svg;
-            setIsRendered(true);
-            setError(null);
-            console.log('Diagram rendered successfully');
-          }
+          // Store SVG content in state instead of directly manipulating DOM
+          setSvgContent(svg);
+          setIsRendered(true);
+          setError(null);
+          console.log('Diagram rendered successfully');
         } catch (err) {
           console.error('Mermaid rendering error:', err);
           setError('Failed to render diagram');
-          // Fallback to text representation
-          if (containerRef.current) {
-            containerRef.current.innerHTML = `
-              <div style="color: #94a3b8; text-align: center; padding: 2rem;">
-                <p>Diagram could not be rendered</p>
-                <p style="font-size: 0.875rem; margin-top: 1rem;">Error: ${err instanceof Error ? err.message : 'Unknown error'}</p>
-                <p style="font-size: 0.875rem; margin-top: 1rem;">Chart definition:</p>
-                <pre style="background: rgba(51, 65, 85, 0.3); padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.75rem; color: #cbd5e1;">${chart}</pre>
-              </div>
-            `;
-          }
         }
       };
 
@@ -119,6 +105,7 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
   // Reset rendered state when chart changes
   useEffect(() => {
     setIsRendered(false);
+    setSvgContent('');
   }, [chart]);
 
   if (!mermaid) {
@@ -143,9 +130,43 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
     );
   }
 
+  if (error) {
+    return (
+      <div 
+        className={`mermaid-diagram ${className}`}
+        style={{ 
+          background: 'transparent',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          margin: '1rem 0',
+          minHeight: '200px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <div style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem' }}>
+          <p>Diagram could not be rendered</p>
+          <p style={{ fontSize: '0.875rem', marginTop: '1rem' }}>Error: {error}</p>
+          <p style={{ fontSize: '0.875rem', marginTop: '1rem' }}>Chart definition:</p>
+          <pre style={{ 
+            background: 'rgba(51, 65, 85, 0.3)', 
+            padding: '1rem', 
+            borderRadius: '8px', 
+            overflowX: 'auto', 
+            fontSize: '0.75rem', 
+            color: '#cbd5e1',
+            maxWidth: '100%'
+          }}>
+            {chart}
+          </pre>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
-      ref={containerRef} 
       className={`mermaid-diagram ${className}`}
       style={{ 
         background: 'transparent',
@@ -158,10 +179,17 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
         justifyContent: 'center'
       }}
     >
-      {!isRendered && !error && (
+      {!isRendered && (
         <div style={{ color: '#94a3b8', textAlign: 'center' }}>
           <p>Rendering diagram...</p>
         </div>
+      )}
+      
+      {isRendered && svgContent && (
+        <div 
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+          style={{ width: '100%', height: 'auto' }}
+        />
       )}
     </div>
   );
