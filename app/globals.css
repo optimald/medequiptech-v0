@@ -340,7 +340,7 @@
 /* Process Flow Diagrams */
 .process-flow-diagram {
   margin: 1rem 0;
-  padding: 1.5rem;
+  padding: 2rem;
   background: rgba(51, 65, 85, 0.2);
   border-radius: 12px;
   border: 1px solid #334155;
@@ -349,7 +349,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 400px;
+  min-height: 500px;
 }
 
 .process-flow-diagram svg {
@@ -372,7 +372,7 @@
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   max-width: 100%;
   height: auto;
-  min-height: 300px;
+  min-height: 400px;
 }
 
 /* Horizontal Flowchart Specific Styling */
@@ -382,8 +382,22 @@
 }
 
 .mermaid-diagram svg .flowchart .node {
-  max-width: 200px;
+  min-width: 120px;
+  min-height: 60px;
+  max-width: 250px;
   word-wrap: break-word;
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+}
+
+.mermaid-diagram svg .flowchart .node text {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+}
+
+.mermaid-diagram svg .flowchart .edgeLabel {
+  font-size: 14px !important;
+  font-weight: 500 !important;
 }
 
 /* Responsive diagram sizing */
