@@ -186,6 +186,35 @@ const useCases = [
       "Delivery scan → IMS owner set; Training executed",
       "Artifacts synced to Case; survey; SAP billing",
     ],
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for web purchase flow
+      subgraph Row1 ["Sales & Case Creation"]
+        A[Web purchase from mrp.io] --> B[Sales Order created]
+        B --> C[Service Case auto-generated]
+      end
+      
+      subgraph Row2 ["Depot Preparation"]
+        C --> D[Jira prep/QA process]
+        D --> E[Parts via Warehouse/SAP]
+        E --> F[Device ready for delivery]
+      end
+      
+      subgraph Row3 ["Job Creation & Bidding"]
+        F --> G[MET jobs: Delivery + Training]
+        G --> H[External providers bid]
+        H --> I[Ops selects winners]
+      end
+      
+      subgraph Row4 ["Execution"]
+        I --> J[Delivery scan → IMS owner set]
+        J --> K[Training executed on-site]
+      end
+      
+      subgraph Row5 ["Completion"]
+        K --> L[Artifacts synced to Case]
+        L --> M[Survey sent]
+        M --> N[SAP billing completed]
+      end`,
     notifications: ["Schedule confirmations", "Training completion"],
     kpis: ["Fulfillment time", "Training completion rate", "CSAT"],
   },
@@ -201,20 +230,35 @@ const useCases = [
       "Sync to Case; closeout; SAP reconcile; survey",
     ],
     mermaidDiagram: `flowchart LR
-      A[Clinic reports device failure] --> B[CSR opens Service Case]
-      B --> C[Entitlement check + SLA start]
-      C --> D[Case Router → MET Job]
-      D --> E[External techs bid]
-      E --> F[Ops selects winner]
-      F --> G[Pre-visit parts planning]
-      G --> H[Parts Prediction Engine]
-      H --> I[Parts Orchestrator reserve]
-      I --> J[Tech arrives with parts]
-      J --> K[On-site repair checklist]
-      K --> L[Parts consume/return scan]
-      L --> M[Sync to Service Case]
-      M --> N[Close Case + Survey]
-      N --> O[SAP cost reconciliation]`,
+      %% Force horizontal wrapping with subgraphs
+      subgraph Row1 ["Initial Response"]
+        A[Clinic reports device failure] --> B[CSR opens Service Case]
+        B --> C[Entitlement check + SLA start]
+      end
+      
+      subgraph Row2 ["Job Creation & Bidding"]
+        C --> D[Case Router → MET Job]
+        D --> E[External techs bid]
+        E --> F[Ops selects winner]
+      end
+      
+      subgraph Row3 ["Parts Planning"]
+        F --> G[Pre-visit parts planning]
+        G --> H[Parts Prediction Engine]
+        H --> I[Parts Orchestrator reserve]
+      end
+      
+      subgraph Row4 ["Execution"]
+        I --> J[Tech arrives with parts]
+        J --> K[On-site repair checklist]
+        K --> L[Parts consume/return scan]
+      end
+      
+      subgraph Row5 ["Completion"]
+        L --> M[Sync to Service Case]
+        M --> N[Close Case + Survey]
+        N --> O[SAP cost reconciliation]
+      end`,
     notifications: ["Appointment, en‑route SMS", "Parts ETA if needed", "Completion email"],
     kpis: ["Response time", "First‑visit fix", "Parts return compliance"],
   },
@@ -229,6 +273,31 @@ const useCases = [
       "Sequence: outlet → deliver (scan) → train",
       "Close Case; SAP billing; survey",
     ],
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for new device sale flow
+      subgraph Row1 ["Sales & Case Creation"]
+        A[Sales: Close/Won → Service Case]
+        B[Jira prep/QA; Parts via Warehouse/SAP]
+        C[IMS updated with device info]
+      end
+      
+      subgraph Row2 ["Job Creation & Bidding"]
+        C --> D[MET jobs: Electrical + Delivery + Training]
+        D --> E[External providers bid on jobs]
+        E --> F[Ops selects winners for each job]
+      end
+      
+      subgraph Row3 ["Sequential Execution"]
+        F --> G[Electrical: Install outlet/prep location]
+        G --> H[Delivery: Driver delivers device on-site]
+        H --> I[Training: Trainer executes training]
+      end
+      
+      subgraph Row4 ["Completion"]
+        I --> J[All artifacts synced to Case]
+        J --> K[Close Case + Survey]
+        K --> L[SAP billing completed]
+      end`,
     notifications: ["All schedule confirmations", "Completion summaries"],
     kpis: ["On‑time sequence", "Install quality", "CSAT"],
   },
@@ -245,25 +314,40 @@ const useCases = [
       "Close; SAP reconcile; survey",
     ],
     mermaidDiagram: `flowchart LR
-      A[Clinic reports device failure] --> B[CSR opens Service Case]
-      B --> C[Entitlement check: loaner available?]
-      C --> D[Two MET Jobs created]
-      D --> E[Job A: Pickup broken device]
-      D --> F[Job B: Deliver loaner + setup]
-      E --> G[Driver picks up broken device]
-      F --> H[Tech delivers & sets up loaner]
-      G --> I[IMS: broken → In Depot]
-      H --> J[IMS: loaner → Assigned]
-      I --> K[Depot refurb in Jira]
-      K --> L[Diagnostic → Repair → QA → Pack]
-      L --> M[Two more MET Jobs]
-      M --> N[Job C: Deliver repaired device]
-      M --> O[Job D: Pickup loaner]
-      N --> P[IMS: repaired → Active at Clinic]
-      O --> Q[IMS: loaner → Available]
-      P --> R[Close Case + Survey]
-      Q --> R
-      R --> S[SAP cost reconciliation]`,
+      %% Force horizontal wrapping with subgraphs for complex loaner flow
+      subgraph Row1 ["Initial Assessment"]
+        A[Clinic reports device failure] --> B[CSR opens Service Case]
+        B --> C[Entitlement check: loaner available?]
+        C --> D[Two MET Jobs created]
+      end
+      
+      subgraph Row2 ["Parallel Jobs - Pickup & Loaner"]
+        D --> E[Job A: Pickup broken device]
+        D --> F[Job B: Deliver loaner + setup]
+      end
+      
+      subgraph Row3 ["Execution & IMS Updates"]
+        E --> G[Driver picks up broken device]
+        F --> H[Tech delivers & sets up loaner]
+        G --> I[IMS: broken → In Depot]
+        H --> J[IMS: loaner → Assigned]
+      end
+      
+      subgraph Row4 ["Depot Process"]
+        I --> K[Depot refurb in Jira]
+        K --> L[Diagnostic → Repair → QA → Pack]
+        L --> M[Two more MET Jobs]
+      end
+      
+      subgraph Row5 ["Final Swap & Completion"]
+        M --> N[Job C: Deliver repaired device]
+        M --> O[Job D: Pickup loaner]
+        N --> P[IMS: repaired → Active at Clinic]
+        O --> Q[IMS: loaner → Available]
+        P --> R[Close Case + Survey]
+        Q --> R
+        R --> S[SAP cost reconciliation]
+      end`,
     notifications: ["Pickup & loaner scheduling", "Repair ETA", "Swap‑back notice"],
     kpis: ["Time to loaner", "Depot cycle time", "% loaner coverage"],
   },
@@ -277,6 +361,37 @@ const useCases = [
       "Outbound ship; tracking posted",
       "Close; warranty billing rules in SAP; survey",
     ],
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for handpiece RMA flow
+      subgraph Row1 ["Case Creation & Shipping"]
+        A[Clinic reports handpiece failure] --> B[CSR opens Service Case + RMA]
+        B --> C[Generate shipping label & tracking]
+        C --> D[Clinic ships handpiece to depot]
+      end
+      
+      subgraph Row2 ["Depot Processing"]
+        D --> E[Depot receives handpiece]
+        E --> F[Depot logs receipt in Jira]
+        F --> G[Diagnostic assessment]
+      end
+      
+      subgraph Row3 ["Rebuild Process"]
+        G --> H[Rebuild process begins]
+        H --> I[Parts ordered from Warehouse/SAP]
+        I --> J[Rebuild completed]
+      end
+      
+      subgraph Row4 ["Quality & Shipping"]
+        J --> K[QA testing & validation]
+        K --> L[Outbound shipping preparation]
+        L --> M[Ship back to clinic]
+      end
+      
+      subgraph Row5 ["Completion"]
+        M --> N[Tracking posted to Case]
+        N --> O[Close Case + Survey]
+        O --> P[Warranty billing rules in SAP]
+      end`,
     notifications: ["We received it", "Rebuild in progress", "Shipped back"],
     kpis: ["Door‑to‑door cycle", "QA first‑pass", "CSAT"],
   },
@@ -337,6 +452,40 @@ const useCases = [
       "Swap‑back jobs; IMS statuses reversed",
       "Close; SAP reconcile; survey",
     ],
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for depot refurb with loaner
+      subgraph Row1 ["Initial Setup"]
+        A[Service Case created] --> B[Two MET jobs: pickup + loaner]
+        B --> C[External providers bid]
+        C --> D[Ops awards both jobs]
+      end
+      
+      subgraph Row2 ["Parallel Execution"]
+        D --> E[Driver picks up broken device]
+        D --> F[Field Tech delivers loaner + setup]
+        E --> G[IMS: broken → In Depot]
+        F --> H[IMS: loaner → Assigned]
+      end
+      
+      subgraph Row3 ["Depot Process"]
+        G --> I[Depot refurb in Jira]
+        I --> J[Diagnostic → Repair → QA → Pack]
+        J --> K[Device ready for return]
+      end
+      
+      subgraph Row4 ["Swap Back"]
+        K --> L[Two more MET jobs created]
+        L --> M[Job C: Deliver repaired device]
+        L --> N[Job D: Pickup loaner]
+        M --> O[IMS: repaired → Active at Clinic]
+        N --> P[IMS: loaner → Available]
+      end
+      
+      subgraph Row5 ["Completion"]
+        O --> Q[Close Case + Survey]
+        P --> Q
+        Q --> R[SAP cost reconciliation]
+      end`,
     notifications: ["Loaner active", "Refurb ETA", "Swap scheduling"],
     kpis: ["Loaner SLA", "Depot cycle", "Repeat failure rate"],
   },
@@ -349,6 +498,37 @@ const useCases = [
       "Jira rebuild; IMS sub‑component lineage",
       "Outbound tracking; close", 
     ],
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for handpiece rebuild
+      subgraph Row1 ["Case Creation & Shipping"]
+        A[Clinic reports handpiece failure] --> B[CSR opens Service Case + RMA]
+        B --> C[Generate shipping label & tracking]
+        C --> D[Clinic ships handpiece to depot]
+      end
+      
+      subgraph Row2 ["Depot Processing"]
+        D --> E[Depot receives handpiece]
+        E --> F[Depot logs receipt in Jira]
+        F --> G[Diagnostic assessment]
+      end
+      
+      subgraph Row3 ["Rebuild Process"]
+        G --> H[Rebuild process begins]
+        H --> I[Parts ordered from Warehouse/SAP]
+        I --> J[Rebuild completed]
+      end
+      
+      subgraph Row4 ["Quality & Shipping"]
+        J --> K[QA testing & validation]
+        K --> L[Outbound shipping preparation]
+        L --> M[Ship back to clinic]
+      end
+      
+      subgraph Row5 ["Completion"]
+        M --> N[Tracking posted to Case]
+        N --> O[Close Case + Survey]
+        O --> P[Warranty billing rules in SAP]
+      end`,
     notifications: ["Received", "Rebuild in progress", "Shipped back"],
     kpis: ["Cycle time", "Warranty vs billable mix", "CSAT"],
   },
@@ -362,6 +542,35 @@ const useCases = [
       "Embedded WebRTC session; transcript/artifacts",
       "Sync to Case; IMS updates if config changed; close; survey",
     ],
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for virtual support
+      subgraph Row1 ["Case Creation"]
+        A[Clinic requests virtual support] --> B[CSR opens Service Case: Virtual Assist]
+        B --> C[Case routed to MET platform]
+      end
+      
+      subgraph Row2 ["Job Creation & Assignment"]
+        C --> D[MET job: Remote Assist created]
+        D --> E[Remote techs bid on job]
+        E --> F[Ops selects winner]
+      end
+      
+      subgraph Row3 ["Virtual Session"]
+        F --> G[Tech assigned to Case]
+        G --> H[Embedded WebRTC session starts]
+        H --> I[Remote diagnosis & support provided]
+      end
+      
+      subgraph Row4 ["Documentation & Updates"]
+        I --> J[Session transcript captured]
+        J --> K[Artifacts synced to Case]
+        K --> L[IMS updates if config changed]
+      end
+      
+      subgraph Row5 ["Completion"]
+        L --> M[Close Case + Survey]
+        M --> N[Tech payout processed]
+      end`,
     notifications: ["Appt confirmation", "Completion summary"],
     kpis: ["Deflection rate", "Time to resolve", "CSAT"],
   },
@@ -375,6 +584,30 @@ const useCases = [
       "Training modules; activation",
       "Provider live in marketplace",
     ],
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for service provider onboarding
+      subgraph Row1 ["Application & KYC"]
+        A[Applicant applies in MET platform] --> B[KYC verification process]
+        B --> C[Banking information collection]
+      end
+      
+      subgraph Row2 ["Review & Approval"]
+        C --> D[Ops Admin reviews application]
+        D --> E[Compliance checks completed]
+        E --> F[SAP vendor record created]
+      end
+      
+      subgraph Row3 ["Training & Activation"]
+        F --> G[Training modules assigned]
+        G --> H[Provider completes training]
+        H --> I[Account activation]
+      end
+      
+      subgraph Row4 ["Marketplace Integration"]
+        I --> J[Provider profile created]
+        J --> K[Provider live in marketplace]
+        K --> L[Ready to receive job bids]
+      end`,
     notifications: ["Welcome & next steps", "Onboarding complete"],
     kpis: ["Time to activate", "% passing compliance", "Early CSAT"],
   },
