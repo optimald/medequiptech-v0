@@ -150,34 +150,41 @@ const useCases = [
       "Close Case; survey; SAP reconciles costs",
     ],
     mermaidDiagram: `flowchart LR
-      %% Force horizontal wrapping with subgraphs for trade-in flow
-      subgraph Row1 ["Sales & Case Creation"]
-        A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won]
-        B --> C[Auto-create Service Case]
-      end
+      %% Horizontal flow with forced row breaks for logical sections
+      %% Row 1: Sales & Case Creation
+      A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won] --> C[Auto-create Service Case]
       
-      subgraph Row2 ["Job Creation & Bidding"]
-        C --> D[Case Router → MET Job]
-        D --> E[External drivers bid]
-        E --> F[Ops selects winner]
-      end
+      %% Force row break with invisible node
+      C --> X1[ ]
+      X1 --> D[Case Router → MET Job]
       
-      subgraph Row3 ["Pickup & Intake"]
-        F --> G[Driver pickup on-site]
-        G --> H[Scan serials → IMS]
-        H --> I[Depot intake → Jira]
-      end
+      %% Row 2: Job Creation & Bidding
+      D --> E[External drivers bid] --> F[Ops selects winner]
       
-      subgraph Row4 ["Refurb Process"]
-        I --> J[Diagnostic → Repair → QA → Pack]
-        J --> K[Parts via Warehouse/SAP]
-      end
+      %% Force row break
+      F --> X2[ ]
+      X2 --> G[Driver pickup on-site]
       
-      subgraph Row5 ["Completion"]
-        K --> L[Inventory ready for resale]
-        L --> M[Close Case + Survey]
-        M --> N[SAP cost reconciliation]
-      end`,
+      %% Row 3: Pickup & Intake
+      G --> H[Scan serials → IMS] --> I[Depot intake → Jira]
+      
+      %% Force row break
+      I --> X3[ ]
+      X3 --> J[Diagnostic → Repair → QA → Pack]
+      
+      %% Row 4: Refurb Process
+      J --> K[Parts via Warehouse/SAP]
+      
+      %% Force row break
+      K --> X4[ ]
+      X4 --> L[Inventory ready for resale]
+      
+      %% Row 5: Completion
+      L --> M[Close Case + Survey] --> N[SAP cost reconciliation]
+      
+      %% Hide invisible nodes
+      classDef invisible fill:none,stroke:none
+      class X1,X2,X3,X4 invisible`,
     notifications: [
       "CSR/Ops alerted on Case creation",
       "Client pickup window",

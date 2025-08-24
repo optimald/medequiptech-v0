@@ -417,6 +417,16 @@
   margin: 10px !important;
 }
 
+/* Hide invisible nodes completely */
+.mermaid-diagram svg .flowchart .node.invisible {
+  display: none !important;
+}
+
+/* Ensure proper row spacing */
+.mermaid-diagram svg .flowchart {
+  row-gap: 40px !important;
+}
+
 /* Subgraph styling for better horizontal layout */
 .mermaid-diagram svg .flowchart .subgraph {
   fill: rgba(51, 65, 85, 0.3) !important;

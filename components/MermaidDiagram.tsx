@@ -54,10 +54,10 @@ export default function MermaidDiagram({ chart, className = '' }: MermaidDiagram
         flowchart: {
           htmlLabels: true,
           curve: 'basis',
-          padding: 30,
+          padding: 20,
           useMaxWidth: false,
-          nodeSpacing: 50,
-          rankSpacing: 80,
+          nodeSpacing: 60,
+          rankSpacing: 100,
           wrap: true,
           nodeMinWidth: 350,
           nodeMinHeight: 70,
