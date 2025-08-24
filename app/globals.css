@@ -323,6 +323,42 @@
   color: #60a5fa;
 }
 
+/* Process Flow Diagrams */
+.process-flow-diagram {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(51, 65, 85, 0.2);
+  border-radius: 12px;
+  border: 1px solid #334155;
+  overflow: hidden;
+}
+
+.process-flow-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mermaid Diagram Styling */
+.mermaid-diagram {
+  text-align: center;
+}
+
+.mermaid-diagram svg {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Responsive diagram sizing */
+@media (max-width: 768px) {
+  .process-flow-diagram {
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+  }
+  
+  .mermaid-diagram svg {
+    max-width: 95%;
+  }
+}
+
 .actors-section h4 {
   color: #a78bfa;
   margin-bottom: 0.5rem;

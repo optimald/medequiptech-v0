@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Home, Play, Pause, RotateCcw } from 'lucide-react';
+import MermaidDiagram from '@/components/MermaidDiagram';
 
 // Platform content from MET_platforms.md
 const platforms = [
@@ -148,6 +149,35 @@ const useCases = [
       "Inventory ready → listed on mrp.io; IMS updated",
       "Close Case; survey; SAP reconciles costs",
     ],
+    mermaidDiagram: `flowchart TD
+      A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won]
+      B --> C[Auto-create Service Case]
+      C --> D[Case Router → MET Job]
+      D --> E[External drivers bid]
+      E --> F[Ops selects winner]
+      F --> G[Driver pickup on-site]
+      G --> H[Scan serials → IMS]
+      H --> I[Depot intake → Jira]
+      I --> J[Diagnostic → Repair → QA → Pack]
+      J --> K[Parts via Warehouse/SAP]
+      K --> L[Inventory ready for resale]
+      L --> M[Close Case + Survey]
+      M --> N[SAP cost reconciliation]
+      
+      style A fill:#60a5fa
+      style B fill:#a78bfa
+      style C fill:#10b981
+      style D fill:#60a5fa
+      style E fill:#a78bfa
+      style F fill:#10b981
+      style G fill:#60a5fa
+      style H fill:#a78bfa
+      style I fill:#10b981
+      style J fill:#60a5fa
+      style K fill:#a78bfa
+      style L fill:#10b981
+      style M fill:#60a5fa
+      style N fill:#a78bfa`,
     notifications: [
       "CSR/Ops alerted on Case creation",
       "Client pickup window",
@@ -180,6 +210,37 @@ const useCases = [
       "On‑site repair checklist; parts consume/return",
       "Sync to Case; closeout; SAP reconcile; survey",
     ],
+    mermaidDiagram: `flowchart TD
+      A[Clinic reports device failure] --> B[CSR opens Service Case]
+      B --> C[Entitlement check + SLA start]
+      C --> D[Case Router → MET Job]
+      D --> E[External techs bid]
+      E --> F[Ops selects winner]
+      F --> G[Pre-visit parts planning]
+      G --> H[Parts Prediction Engine]
+      H --> I[Parts Orchestrator reserve]
+      I --> J[Tech arrives with parts]
+      J --> K[On-site repair checklist]
+      K --> L[Parts consume/return scan]
+      L --> M[Sync to Service Case]
+      M --> N[Close Case + Survey]
+      N --> O[SAP cost reconciliation]
+      
+      style A fill:#60a5fa
+      style B fill:#a78bfa
+      style C fill:#10b981
+      style D fill:#60a5fa
+      style E fill:#a78bfa
+      style F fill:#10b981
+      style G fill:#60a5fa
+      style H fill:#a78bfa
+      style I fill:#10b981
+      style J fill:#60a5fa
+      style K fill:#a78bfa
+      style L fill:#10b981
+      style M fill:#60a5fa
+      style N fill:#a78bfa
+      style O fill:#10b981`,
     notifications: ["Appointment, en‑route SMS", "Parts ETA if needed", "Completion email"],
     kpis: ["Response time", "First‑visit fix", "Parts return compliance"],
   },
@@ -209,6 +270,42 @@ const useCases = [
       "Return & swap back (Jobs C & D); statuses flip",
       "Close; SAP reconcile; survey",
     ],
+    mermaidDiagram: `flowchart TD
+      A[Clinic reports device failure] --> B[CSR opens Service Case]
+      B --> C[Entitlement check: loaner available?]
+      C --> D[Two MET Jobs created]
+      D --> E[Job A: Pickup broken device]
+      D --> F[Job B: Deliver loaner + setup]
+      E --> G[Driver picks up broken device]
+      F --> H[Tech delivers & sets up loaner]
+      G --> I[IMS: broken → In Depot]
+      H --> J[IMS: loaner → Assigned]
+      I --> K[Depot refurb in Jira]
+      K --> L[Diagnostic → Repair → QA → Pack]
+      L --> M[Two more MET Jobs]
+      M --> N[Job C: Deliver repaired device]
+      M --> O[Job D: Pickup loaner]
+      N --> P[IMS: repaired → Active at Clinic]
+      O --> Q[IMS: loaner → Available]
+      P --> R[Close Case + Survey]
+      Q --> R
+      R --> S[SAP cost reconciliation]
+      
+      style A fill:#60a5fa
+      style D fill:#a78bfa
+      style E fill:#10b981
+      style F fill:#10b981
+      style I fill:#60a5fa
+      style J fill:#a78bfa
+      style K fill:#10b981
+      style L fill:#60a5fa
+      style M fill:#a78bfa
+      style N fill:#10b981
+      style O fill:#10b981
+      style P fill:#60a5fa
+      style Q fill:#a78bfa
+      style R fill:#10b981
+      style S fill:#60a5fa`,
     notifications: ["Pickup & loaner scheduling", "Repair ETA", "Swap‑back notice"],
     kpis: ["Time to loaner", "Depot cycle time", "% loaner coverage"],
   },
@@ -236,6 +333,38 @@ const useCases = [
       "On‑site: checklist; parts consume/return; signature",
       "Job.Completed → sync → close; SAP payout & billing; survey",
     ],
+    mermaidDiagram: `sequenceDiagram
+      participant C as Clinic
+      participant S as Service Cloud
+      participant M as MET
+      participant T as Tech
+      participant P as Parts Orchestrator
+      participant W as Warehouse
+      participant I as IMS
+      participant A as SAP
+      
+      C->>S: Report device failure
+      S->>S: Create Case + SLA start
+      S->>M: Post repair job
+      M->>M: Techs bid
+      M->>S: Award winner
+      S->>C: Tech assigned notification
+      M->>P: Request parts prediction
+      P->>W: Reserve predicted parts
+      P->>M: Parts package ready
+      M->>T: Job award + parts pickup
+      T->>W: Pick up parts package
+      T->>C: Arrive on-site
+      T->>M: Start repair checklist
+      T->>M: Scan parts consumed
+      T->>M: Scan parts returned
+      M->>I: Update device history
+      M->>A: Post parts costs
+      T->>M: Complete repair
+      M->>S: Sync completion
+      S->>C: Completion notification
+      S->>C: Satisfaction survey
+      M->>A: Trigger tech payout`,
     notifications: ["Case created", "Tech assigned", "Parts prepared", "Completion"],
     kpis: ["First‑visit fix", "MTTR", "Prediction accuracy", "Return rate"],
   },
@@ -510,21 +639,27 @@ export default function ConceptPage() {
             </div>
           </div>
         );
-      } else if (useCaseSlideType === 1) {
-        return (
-          <div className="slide usecase-slide">
-            <h1>{useCase.code} — Process Flow</h1>
-            <h3 className="slide-subtitle">Intake → Routing → Execution → Closeout</h3>
-            <div className="slide-content">
-              <ol>
-                {useCase.steps.map((step, index) => (
-                  <li key={index}>{step}</li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        );
-      } else if (useCaseSlideType === 2) {
+             } else if (useCaseSlideType === 1) {
+         return (
+           <div className="slide usecase-slide">
+             <h1>{useCase.code} — Process Flow</h1>
+             <h3 className="slide-subtitle">Intake → Routing → Execution → Closeout</h3>
+             <div className="slide-content">
+               {useCase.mermaidDiagram ? (
+                 <div className="process-flow-diagram">
+                   <MermaidDiagram chart={useCase.mermaidDiagram} />
+                 </div>
+               ) : (
+                 <ol>
+                   {useCase.steps.map((step, index) => (
+                     <li key={index}>{step}</li>
+                   ))}
+                 </ol>
+               )}
+             </div>
+           </div>
+         );
+       } else if (useCaseSlideType === 2) {
         return (
           <div className="slide usecase-slide">
             <h1>{useCase.code} — Notifications</h1>
