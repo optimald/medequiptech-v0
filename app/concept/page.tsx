@@ -149,25 +149,35 @@ const useCases = [
       "Inventory ready → listed on mrp.io; IMS updated",
       "Close Case; survey; SAP reconciles costs",
     ],
-    mermaidDiagram: `flowchart TD
-      %% Each step on its own row for maximum legibility
-      A[Sales Rep closes trade-in]
-      B[Sales Cloud: Close/Won]
-      C[Auto-create Service Case]
-      D[Case Router → MET Job]
-      E[External drivers bid]
-      F[Ops selects winner]
-      G[Driver pickup on-site]
-      H[Scan serials → IMS]
-      I[Depot intake → Jira]
-      J[Diagnostic → Repair → QA → Pack]
-      K[Parts via Warehouse/SAP]
-      L[Inventory ready for resale]
-      M[Close Case + Survey]
-      N[SAP cost reconciliation]
+    mermaidDiagram: `flowchart LR
+      %% Force horizontal wrapping with subgraphs for trade-in flow
+      subgraph Row1 ["Sales & Case Creation"]
+        A[Sales Rep closes trade-in] --> B[Sales Cloud: Close/Won]
+        B --> C[Auto-create Service Case]
+      end
       
-      %% Connect steps with arrows
-      A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L --> M --> N`,
+      subgraph Row2 ["Job Creation & Bidding"]
+        C --> D[Case Router → MET Job]
+        D --> E[External drivers bid]
+        E --> F[Ops selects winner]
+      end
+      
+      subgraph Row3 ["Pickup & Intake"]
+        F --> G[Driver pickup on-site]
+        G --> H[Scan serials → IMS]
+        H --> I[Depot intake → Jira]
+      end
+      
+      subgraph Row4 ["Refurb Process"]
+        I --> J[Diagnostic → Repair → QA → Pack]
+        J --> K[Parts via Warehouse/SAP]
+      end
+      
+      subgraph Row5 ["Completion"]
+        K --> L[Inventory ready for resale]
+        L --> M[Close Case + Survey]
+        M --> N[SAP cost reconciliation]
+      end`,
     notifications: [
       "CSR/Ops alerted on Case creation",
       "Client pickup window",
