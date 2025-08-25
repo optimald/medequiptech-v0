@@ -1116,33 +1116,41 @@ export default function ConceptPage() {
 
   return (
     <div className="concept-container">
-      {/* Navigation Bar */}
+      {/* Mobile-Optimized Navigation Bar */}
       <div className="nav-bar">
-        <div className="nav-left">
-          <button onClick={resetToStart} className="nav-button" title="Go to start (Home)">
-            <Home size={20} />
+        {/* Top Row: Compact Controls */}
+        <div className="nav-top-row">
+          <button onClick={resetToStart} className="nav-button-compact" title="Start">
+            <Home size={18} />
           </button>
-          <button onClick={toggleAutoPlay} className="nav-button" title="Toggle auto-play (Space)">
-            {isAutoPlaying ? <Pause size={20} /> : <Play size={20} />}
+          <button onClick={toggleAutoPlay} className="nav-button-compact" title="Play/Pause">
+            {isAutoPlaying ? <Pause size={18} /> : <Play size={18} />}
           </button>
-          <button onClick={resetToStart} className="nav-button" title="Reset (ESC)">
-            <RotateCcw size={20} />
+          <button onClick={resetToStart} className="nav-button-compact" title="Reset">
+            <RotateCcw size={18} />
+          </button>
+          
+          <div className="nav-spacer" />
+          
+          <button onClick={prevSlide} className="nav-button-compact" title="Previous">
+            <ChevronLeft size={18} />
+          </button>
+          <button onClick={nextSlide} className="nav-button-compact" title="Next">
+            <ChevronRight size={18} />
           </button>
         </div>
         
-        <div className="nav-center">
-          <span className="slide-counter">
+        {/* Bottom Row: Slide Counter & Progress */}
+        <div className="nav-bottom-row">
+          <span className="slide-counter-mobile">
             {currentSlide + 1} / {totalSlides}
           </span>
-        </div>
-        
-        <div className="nav-right">
-          <button onClick={prevSlide} className="nav-button" title="Previous slide (←)">
-            <ChevronLeft size={20} />
-          </button>
-          <button onClick={nextSlide} className="nav-button" title="Next slide (→)">
-            <ChevronRight size={20} />
-          </button>
+          <div className="progress-bar-mobile">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}
+            />
+          </div>
         </div>
       </div>
 
