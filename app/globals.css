@@ -702,23 +702,26 @@
   transition: opacity 0.2s ease;
 }
 
-/* Homepage Navigation Overrides */
-.homepage-nav {
-  background: transparent !important;
-  border-bottom: transparent !important;
+/* Homepage Navigation Styles */
+/* These styles ensure the navigation is transparent and text is readable */
+nav.absolute {
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
+  border: none !important;
 }
 
-.homepage-nav * {
-  color: white !important;
+/* Ensure text is white and visible against dark backgrounds */
+nav.absolute a {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.homepage-nav a {
-  color: white !important;
-}
-
-.homepage-nav a:hover {
-  color: #93c5fd !important; /* blue-300 */
+/* Hover effect */
+nav.absolute a:hover {
+  color: #93c5fd; /* blue-300 */
 }
 
 /* Responsive Design */
@@ -796,3 +799,4 @@
     height: 10px;
   }
 }
+

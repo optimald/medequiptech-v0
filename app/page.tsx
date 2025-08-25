@@ -14,9 +14,17 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Transparent Navigation Bar */}
-      <nav className="homepage-nav sticky top-0 z-50 bg-transparent border-b border-transparent">
+      <nav 
+        className="absolute top-0 left-0 right-0 z-50"
+        style={{
+          background: 'transparent',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
+            {/* Logo */}
             <div className="flex items-center">
               <Image
                 src="/met-logo.png"
@@ -24,8 +32,11 @@ export default function Home() {
                 width={150}
                 height={45}
                 className="h-10 w-auto"
+                priority
               />
             </div>
+            
+            {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
               <a href="#services" className="text-white hover:text-blue-300 font-medium transition-colors">
                 Services
@@ -43,6 +54,8 @@ export default function Home() {
                 Contact
               </a>
             </div>
+            
+            {/* CTA Buttons */}
             <div className="flex items-center space-x-4">
               {user ? (
                 <Link
