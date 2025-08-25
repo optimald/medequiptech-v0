@@ -13,8 +13,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Sticky Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg">
+      {/* Transparent Navigation Bar */}
+      <nav className="sticky top-0 z-50 bg-transparent border-b border-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
@@ -27,19 +27,19 @@ export default function Home() {
               />
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#services" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+              <a href="#services" className="text-white hover:text-blue-300 font-medium transition-colors">
                 Services
               </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+              <a href="#how-it-works" className="text-white hover:text-blue-300 font-medium transition-colors">
                 How It Works
               </a>
-              <a href="#testimonials" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+              <a href="#testimonials" className="text-white hover:text-blue-300 font-medium transition-colors">
                 Testimonials
               </a>
-              <a href="#pricing" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+              <a href="#pricing" className="text-white hover:text-blue-300 font-medium transition-colors">
                 Pricing
               </a>
-              <a href="/contact" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+              <a href="/contact" className="text-white hover:text-blue-300 font-medium transition-colors">
                 Contact
               </a>
             </div>
@@ -55,7 +55,7 @@ export default function Home() {
                 <>
                   <Link
                     href="/auth/signin"
-                    className="text-gray-700 hover:text-blue-600 px-4 py-2 text-sm font-medium transition-colors"
+                    className="text-white hover:text-blue-300 px-4 py-2 text-sm font-medium transition-colors"
                   >
                     Sign In
                   </Link>
