@@ -702,6 +702,25 @@
   transition: opacity 0.2s ease;
 }
 
+/* Homepage Navigation Overrides */
+.homepage-nav {
+  background: transparent !important;
+  border-bottom: transparent !important;
+  box-shadow: none !important;
+}
+
+.homepage-nav * {
+  color: white !important;
+}
+
+.homepage-nav a {
+  color: white !important;
+}
+
+.homepage-nav a:hover {
+  color: #93c5fd !important; /* blue-300 */
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .slide {

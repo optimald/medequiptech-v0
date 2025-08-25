@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Transparent Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-transparent border-b border-transparent">
+      <nav className="homepage-nav sticky top-0 z-50 bg-transparent border-b border-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
